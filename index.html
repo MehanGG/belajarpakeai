@@ -82,7 +82,8 @@
         <div class="p-4 border-b border-gray-200 bg-gray-50">
             <h2 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">API Settings</h2>
             <div class="space-y-3">
-                <input type="password" id="api-key" placeholder="Masukkan API Key" class="w-full text-sm p-2 border border-gray-300 rounded focus:ring-2 focus:ring-primary focus:border-transparent outline-none">
+                <input type="text" id="api-base-url" value="https://api.openai.com/v1" placeholder="Base URL (Cth: URL Vercel)" class="w-full text-sm p-2 border border-gray-300 rounded focus:ring-2 focus:ring-primary outline-none">
+                <input type="password" id="api-key" placeholder="Masukkan API Key" class="w-full text-sm p-2 border border-gray-300 rounded focus:ring-2 focus:ring-primary outline-none">
                 <button onclick="verifyAPI()" class="w-full bg-primary hover:bg-secondary text-white text-sm py-2 rounded transition-colors font-medium">
                     Verifikasi & Muat Model
                 </button>
@@ -126,7 +127,7 @@
                 <div class="flex gap-4">
                     <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white shrink-0"><i class="fa-solid fa-robot text-sm"></i></div>
                     <div class="bg-white p-4 rounded-xl rounded-tl-none shadow-sm border border-gray-100 max-w-3xl">
-                        <p>Halo! Masukkan API Key kamu di menu samping, pilih model, lalu mari mulai mengobrol.</p>
+                        <p>Halo! Masukkan API Key kamu (dan Base URL jika pakai proxy/Vercel) di menu samping, pilih model, lalu mari mulai mengobrol.</p>
                     </div>
                 </div>
             </div>
@@ -262,6 +263,7 @@
         // State Management
         let appState = {
             apiKey: '',
+            baseUrl: '',
             models: [],
             selectedModel: '',
             chatHistory: [
@@ -312,62 +314,85 @@
         // API & AI Core Logic
         async function verifyAPI() {
             const key = document.getElementById('api-key').value.trim();
+            const baseUrlInput = document.getElementById('api-base-url').value.trim();
+            // Default ke OpenAI jika kosong
+            const baseUrl = baseUrlInput || 'https://api.openai.com/v1';
+            
             if(!key) return alert("Masukkan API Key terlebih dahulu!");
             
-            try {
-                const btn = document.querySelector('button[onclick="verifyAPI()"]');
-                const originalText = btn.innerText;
-                btn.innerText = "Memverifikasi...";
-                btn.disabled = true;
+            const btn = document.querySelector('button[onclick="verifyAPI()"]');
+            btn.innerText = "Memverifikasi...";
+            btn.disabled = true;
 
-                // Menggunakan endpoint standard OpenAI untuk /models
-                const res = await fetch('https://api.openai.com/v1/models', {
+            try {
+                // Fetch model untuk memvalidasi
+                const res = await fetch(`${baseUrl}/models`, {
+                    method: 'GET',
                     headers: { 'Authorization': `Bearer ${key}` }
                 });
 
-                if(!res.ok) throw new Error("API Key tidak valid atau error jaringan.");
+                if(!res.ok) throw new Error(`Status Code: ${res.status}`);
                 const data = await res.json();
                 
                 appState.apiKey = key;
-                appState.models = data.data.filter(m => m.id.includes('gpt') || m.id.includes('gemini') || m.id.includes('claude')).map(m => m.id);
+                appState.baseUrl = baseUrl;
+                appState.models = data.data.filter(m => m.id.includes('gpt') || m.id.includes('gemini') || m.id.includes('claude') || m.id.includes('llama')).map(m => m.id);
                 
-                if(appState.models.length === 0) appState.models = data.data.map(m => m.id).slice(0, 10); // fallback
+                if(appState.models.length === 0) appState.models = data.data.map(m => m.id).slice(0, 15);
                 
-                const select = document.getElementById('ai-model');
-                select.innerHTML = '';
-                appState.models.forEach(model => {
-                    const option = document.createElement('option');
-                    option.value = model;
-                    option.text = model;
-                    // Prefer vision models if available
-                    if(model.includes('4o') || model.includes('vision') || model.includes('1.5')) option.selected = true;
-                    select.appendChild(option);
-                });
-                
-                appState.selectedModel = select.value;
-                select.addEventListener('change', (e) => appState.selectedModel = e.target.value);
-                
-                document.getElementById('model-select-container').classList.remove('hidden');
-                btn.innerText = "Berhasil!";
-                btn.classList.replace('bg-primary', 'bg-green-500');
-                setTimeout(() => {
-                    btn.innerText = "Update Key";
-                    btn.classList.replace('bg-green-500', 'bg-primary');
-                    btn.disabled = false;
-                }, 2000);
+                renderModelSelection(btn, true);
+
             } catch(e) {
-                alert("Gagal memverifikasi: " + e.message);
-                document.querySelector('button[onclick="verifyAPI()"]').innerText = "Verifikasi & Muat Model";
-                document.querySelector('button[onclick="verifyAPI()"]').disabled = false;
+                console.warn("Gagal fetch /models (Mungkin karena CORS Vercel Proxy atau batasan endpoint API). Menjalankan mode Fallback.", e);
+                
+                // FALLBACK MODE: Jika API di Vercel block request `/models` karena CORS atau tidak di-setup,
+                // kita bypass validasi dan beri model default agar user tetap bisa pakai `/chat/completions`.
+                appState.apiKey = key;
+                appState.baseUrl = baseUrl;
+                appState.models = ['gpt-4o', 'gpt-4-turbo', 'gpt-3.5-turbo', 'gemini-1.5-pro', 'gemini-1.5-flash', 'claude-3-sonnet'];
+                
+                renderModelSelection(btn, false);
             }
         }
 
+        function renderModelSelection(btn, isSuccess) {
+            const select = document.getElementById('ai-model');
+            select.innerHTML = '';
+            appState.models.forEach(model => {
+                const option = document.createElement('option');
+                option.value = model;
+                option.text = model;
+                if(model.includes('4o') || model.includes('vision') || model.includes('1.5')) option.selected = true;
+                select.appendChild(option);
+            });
+            
+            appState.selectedModel = select.value;
+            select.addEventListener('change', (e) => appState.selectedModel = e.target.value);
+            
+            document.getElementById('model-select-container').classList.remove('hidden');
+            
+            if (isSuccess) {
+                btn.innerText = "Berhasil!";
+                btn.classList.replace('bg-primary', 'bg-green-500');
+            } else {
+                btn.innerText = "Mode Fallback";
+                btn.classList.replace('bg-primary', 'bg-yellow-500');
+            }
+            
+            setTimeout(() => {
+                btn.innerText = "Update Key";
+                btn.classList.remove('bg-green-500', 'bg-yellow-500');
+                btn.classList.add('bg-primary');
+                btn.disabled = false;
+            }, 2500);
+        }
+
         async function callAI(messages) {
-            if(!appState.apiKey || !appState.selectedModel) {
+            if(!appState.apiKey || !appState.selectedModel || !appState.baseUrl) {
                 throw new Error("Silakan verifikasi API Key dan pilih model terlebih dahulu di menu samping.");
             }
             
-            const res = await fetch('https://api.openai.com/v1/chat/completions', {
+            const res = await fetch(`${appState.baseUrl}/chat/completions`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -381,8 +406,8 @@
             });
 
             if(!res.ok) {
-                const err = await res.json();
-                throw new Error(err.error?.message || "Terjadi kesalahan pada API.");
+                const err = await res.json().catch(() => ({}));
+                throw new Error(err.error?.message || `Terjadi kesalahan. Status: ${res.status}`);
             }
             
             const data = await res.json();
@@ -458,7 +483,6 @@
                 if(f.type.startsWith('image/')) {
                     contentArray.push({ type: "image_url", image_url: { url: f.data } });
                 } else {
-                    // For non-images (like text converted to base64 data url), we decode it for context
                     try {
                         const base64String = f.data.split(',')[1];
                         const text = atob(base64String);
@@ -544,7 +568,6 @@ Format JSON yang diharapkan:
             try {
                 let response = await callAI([{ role: 'user', content: promptContent }]);
                 
-                // Bersihkan respon jika ada block markdown
                 response = response.replace(/```json/g, '').replace(/```/g, '').trim();
                 const data = JSON.parse(response);
                 
@@ -564,10 +587,9 @@ Format JSON yang diharapkan:
             container.innerHTML = '';
             masterContainer.innerHTML = '<h1 style="text-align:center;">Rangkuman Materi Lengkap</h1><hr/>';
 
-            window.rangkumanData = data; // Save for modal
+            window.rangkumanData = data; 
 
             data.forEach((item, index) => {
-                // Buat UI List
                 container.innerHTML += `
                     <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <h4 class="font-bold text-lg text-gray-800">${item.bab}</h4>
@@ -581,7 +603,6 @@ Format JSON yang diharapkan:
                         </div>
                     </div>
                 `;
-                // Build Master Content for "Download Semua"
                 masterContainer.innerHTML += `<h2>${item.bab}</h2>${marked.parse(item.konten)}<br><hr><br>`;
             });
         }
@@ -671,7 +692,7 @@ Format:
                         selected.parentElement.classList.add('bg-green-100', 'border-green-400');
                     } else {
                         selected.parentElement.classList.add('bg-red-100', 'border-red-400');
-                        labels[q.jawaban].classList.add('bg-green-50', 'border-green-400', 'text-green-700'); // Tunjukkan yang benar
+                        labels[q.jawaban].classList.add('bg-green-50', 'border-green-400', 'text-green-700'); 
                     }
                 } else {
                     labels[q.jawaban].classList.add('bg-green-50', 'border-green-400', 'text-green-700');
@@ -731,7 +752,6 @@ Format:
 
             let element;
             if(dataIndex !== null) {
-                // Buat elemen temporary dari data
                 element = document.createElement('div');
                 element.className = 'prose p-8';
                 element.innerHTML = `<h2>${window.rangkumanData[dataIndex].bab}</h2>${marked.parse(window.rangkumanData[dataIndex].konten)}`;
@@ -740,9 +760,9 @@ Format:
             } else {
                 alert("Mohon tunggu, sedang menyusun PDF...");
                 element = document.getElementById(elementId);
-                element.classList.remove('hidden'); // Tampilkan sementara agar bisa dirender
+                element.classList.remove('hidden'); 
                 html2pdf().set(opt).from(element).save().then(() => {
-                    element.classList.add('hidden'); // Sembunyikan lagi
+                    element.classList.add('hidden'); 
                 });
             }
         }
