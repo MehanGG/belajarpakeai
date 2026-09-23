@@ -338,7 +338,7 @@
         <div id="view-essay" class="view-section flex-col h-full hidden overflow-y-auto p-4 md:p-8">
             <div class="max-w-4xl mx-auto w-full">
                 <h2 class="text-2xl font-bold mb-2">Essay Quiz</h2>
-                <p class="text-gray-600 mb-6">Gunakan maksimal 25 file sebagai bahan utama. AI akan membuat soal essay dan mengecek jawabanmu satu per satu.</p>
+                <p class="text-gray-600 mb-6">Gunakan maksimal 25 file sebagai bahan utama. Jawaban akan dikumpulkan terlebih dahulu, lalu AI akan mereview semuanya di akhir.</p>
 
                 <div id="essay-setup-card" class="bg-white rounded-xl p-5 shadow-sm border border-gray-200 mb-4">
                     <div id="drop-essay" class="drop-zone bg-white rounded-xl p-10 flex flex-col items-center justify-center cursor-pointer mb-4" onclick="document.getElementById('file-essay').click()">
@@ -381,9 +381,22 @@
                     </div>
 
                     <div id="essay-container"></div>
-                    <div id="essay-feedback" class="hidden bg-white p-5 rounded-xl border border-gray-200 mt-4"></div>
-                    <button id="essay-submit-btn" onclick="submitEssayAnswer()" class="w-full mt-4 bg-primary hover:bg-secondary text-white px-6 py-3 rounded-xl font-semibold transition-colors">Cek Jawaban dengan AI</button>
-                    <button id="essay-next-btn" onclick="nextEssayQuestion()" class="hidden w-full mt-2 bg-gray-900 hover:bg-black text-white px-6 py-3 rounded-xl font-semibold transition-colors">Next</button>
+                    <div id="essay-feedback" class="hidden"></div>
+                    <button id="essay-next-btn" onclick="nextEssayQuestion()" class="w-full mt-4 bg-primary hover:bg-secondary text-white px-6 py-3 rounded-xl font-semibold transition-colors">Next</button>
+
+                    <div id="essay-reviewing" class="hidden bg-white p-6 rounded-xl shadow-sm border border-gray-200 mt-4">
+                        <div class="text-center">
+                            <div class="w-14 h-14 rounded-full bg-indigo-50 text-primary flex items-center justify-center mx-auto mb-3"><i class="fa-solid fa-robot text-2xl"></i></div>
+                            <h3 class="text-xl font-bold">AI Reviewing your Answer.</h3>
+                            <p class="text-gray-500 text-sm mt-1">AI sedang menilai semua jawabanmu sekaligus.</p>
+                        </div>
+                        <div class="mt-6">
+                            <div class="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
+                                <div id="essay-review-bar" class="h-full bg-primary rounded-full transition-all duration-200" style="width:0%"></div>
+                            </div>
+                            <div id="essay-review-progress-text" class="text-center text-sm font-semibold text-primary mt-2">0/100</div>
+                        </div>
+                    </div>
 
                     <div id="essay-final" class="hidden bg-white p-6 rounded-xl shadow-sm border border-gray-200 mt-4">
                         <div class="text-center">
@@ -605,8 +618,10 @@
             quizFinished: false,
             essayData: [],
             essayCurrentIndex: 0,
+            essayAnswers: [],
             essayResults: [],
             essaySubmitted: false,
+            essayReviewing: false,
             youtubeVideoId: '',
             mindMapData: null,
             mindMapCollapsed: {}
@@ -1296,6 +1311,8 @@ Jawaban adalah index 0-3. Pastikan jumlah item tepat ${count}. Soal harus jelas,
                 document.getElementById('thinking-essay-text').textContent = 'AI sedang menyusun soal essay...';
                 document.getElementById('essay-setup-card').classList.add('hidden');
                 document.getElementById('result-essay').classList.add('hidden');
+                document.getElementById('essay-reviewing').classList.add('hidden');
+                document.getElementById('essay-final').classList.add('hidden');
 
                 const detail = document.getElementById('essay-detail').value.trim();
                 const detailInstruction = detail
@@ -1318,8 +1335,10 @@ Output WAJIB JSON array murni tanpa markdown. Format setiap item: {"soal":"Perta
                 })).filter(q => q.soal);
                 if(appState.essayData.length !== count) throw new Error('Ada format soal essay dari AI yang tidak lengkap. Coba lagi.');
                 appState.essayCurrentIndex = 0;
+                appState.essayAnswers = new Array(count).fill('');
                 appState.essayResults = new Array(count).fill(null);
                 appState.essaySubmitted = false;
+                appState.essayReviewing = false;
                 renderEssayQuestion();
                 document.getElementById('thinking-essay').classList.add('hidden');
                 document.getElementById('result-essay').classList.remove('hidden');
@@ -1335,116 +1354,153 @@ Output WAJIB JSON array murni tanpa markdown. Format setiap item: {"soal":"Perta
             if(!q) return;
             const total = appState.essayData.length;
             const index = appState.essayCurrentIndex;
+            const savedAnswer = appState.essayAnswers[index] || '';
             document.getElementById('essay-question-counter').textContent = `Soal ${index + 1} dari ${total}`;
             document.getElementById('essay-progress-bar').style.width = `${((index + 1) / total) * 100}%`;
-            const graded = appState.essayResults.filter(Boolean);
-            const points = graded.reduce((sum, r) => sum + Number(r.score || 0), 0);
-            document.getElementById('essay-score-mini').textContent = `${points} / ${graded.length * 100 || 0}`;
+            document.getElementById('essay-score-mini').textContent = `${index} / ${total} dijawab`;
 
             document.getElementById('essay-container').innerHTML = `<div class="bg-white p-5 md:p-7 rounded-xl shadow-sm border border-gray-200">
                 <div class="text-sm text-primary font-semibold mb-3">Pertanyaan Essay</div>
                 <h3 class="text-xl md:text-2xl font-bold leading-relaxed mb-5">${escapeHTML(q.soal)}</h3>
-                <textarea id="essay-answer-input" rows="7" class="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary outline-none resize-y" placeholder="Tulis jawabanmu di sini..."></textarea>
+                <textarea id="essay-answer-input" rows="7" class="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary outline-none resize-y" placeholder="Tulis jawabanmu di sini...">${escapeHTML(savedAnswer)}</textarea>
             </div>`;
-            document.getElementById('essay-feedback').classList.add('hidden');
-            document.getElementById('essay-feedback').innerHTML = '';
-            const submitBtn = document.getElementById('essay-submit-btn');
+
             const nextBtn = document.getElementById('essay-next-btn');
-            submitBtn.classList.remove('hidden');
-            submitBtn.disabled = false;
-            submitBtn.textContent = 'Cek Jawaban dengan AI';
-            nextBtn.classList.add('hidden');
+            nextBtn.classList.remove('hidden');
+            nextBtn.disabled = false;
+            nextBtn.innerHTML = index === total - 1 ? '<i class="fa-solid fa-flag-checkered mr-2"></i>Selesai & Review Jawaban' : '<i class="fa-solid fa-arrow-right mr-2"></i>Next';
+            document.getElementById('essay-reviewing').classList.add('hidden');
+            document.getElementById('essay-final').classList.add('hidden');
             appState.essaySubmitted = false;
         }
 
-        async function submitEssayAnswer() {
-            const q = appState.essayData[appState.essayCurrentIndex];
-            const input = document.getElementById('essay-answer-input');
-            const answer = input.value.trim();
-            if(!answer) { input.focus(); return alert('Jawaban wajib diisi terlebih dahulu.'); }
-
-            const submitBtn = document.getElementById('essay-submit-btn');
-            const nextBtn = document.getElementById('essay-next-btn');
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> AI sedang mengecek...';
-            document.getElementById('thinking-essay').classList.remove('hidden');
-            document.getElementById('thinking-essay-text').textContent = 'AI sedang menilai jawabanmu...';
-
-            const prompt = `Kamu adalah guru yang objektif. Nilai jawaban siswa terhadap soal essay berikut berdasarkan materi, jawaban acuan, dan rubrik. Beri skor 0-100. Jangan menuntut kata-kata persis; nilai berdasarkan ketepatan konsep, kelengkapan, dan relevansi. Output WAJIB JSON object murni tanpa markdown dengan format: {"score":85,"status":"Benar/Sebagian Benar/Perlu Diperbaiki","feedback":"Penjelasan singkat dan spesifik","jawaban_ideal":"Jawaban ideal singkat"}.
-
-SOAL:
-${q.soal}
-
-JAWABAN ACUAN:
-${q.jawaban_acuan}
-
-RUBRIK:
-${q.rubrik}
-
-JAWABAN SISWA:
-${answer}`;
-
-            try {
-                const response = await callAI([{ role: 'user', content: prompt }]);
-                let text = String(response || '').trim().replace(/^```(?:json)?/i, '').replace(/```$/i, '').trim();
-                const start = text.indexOf('{');
-                const end = text.lastIndexOf('}') + 1;
-                if(start < 0 || end <= start) throw new Error('Respons penilaian AI bukan JSON object yang valid.');
-                const result = JSON.parse(text.slice(start, end));
-                const score = Math.max(0, Math.min(100, Number(result.score) || 0));
-                appState.essayResults[appState.essayCurrentIndex] = {
-                    answer,
-                    score,
-                    status: String(result.status || ''),
-                    feedback: String(result.feedback || ''),
-                    jawaban_ideal: String(result.jawaban_ideal || q.jawaban_acuan)
-                };
-                appState.essaySubmitted = true;
-                document.getElementById('essay-feedback').innerHTML = `<div class="flex items-start justify-between gap-4 mb-3"><div><p class="text-sm text-gray-500">Hasil penilaian AI</p><h4 class="text-xl font-bold">${escapeHTML(result.status || 'Dinilai')}</h4></div><div class="text-3xl font-black text-primary">${score}</div></div><div class="prose prose-sm max-w-none"><p><strong>Feedback:</strong> ${escapeHTML(result.feedback || '')}</p><p><strong>Jawaban ideal:</strong> ${escapeHTML(result.jawaban_ideal || q.jawaban_acuan)}</p></div>`;
-                document.getElementById('essay-feedback').classList.remove('hidden');
-                submitBtn.classList.add('hidden');
-                nextBtn.classList.remove('hidden');
-                nextBtn.textContent = appState.essayCurrentIndex === appState.essayData.length - 1 ? 'Lihat Nilai Akhir' : 'Next';
-                const points = appState.essayResults.filter(Boolean).reduce((sum, r) => sum + Number(r.score || 0), 0);
-                const graded = appState.essayResults.filter(Boolean).length;
-                document.getElementById('essay-score-mini').textContent = `${points} / ${graded * 100}`;
-            } catch(e) {
-                alert('Gagal mengecek jawaban dengan AI. Detail: ' + e.message);
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Cek Jawaban dengan AI';
-            } finally {
-                document.getElementById('thinking-essay').classList.add('hidden');
-            }
-        }
-
         function nextEssayQuestion() {
-            if(!appState.essaySubmitted) return;
+            const input = document.getElementById('essay-answer-input');
+            if(!input) return;
+            const answer = input.value.trim();
+            if(!answer) {
+                input.focus();
+                return alert('Jawaban wajib diisi terlebih dahulu.');
+            }
+
+            appState.essayAnswers[appState.essayCurrentIndex] = answer;
+
             if(appState.essayCurrentIndex < appState.essayData.length - 1) {
                 appState.essayCurrentIndex += 1;
                 renderEssayQuestion();
-            } else {
-                finishEssayQuiz();
+                return;
+            }
+
+            reviewEssayAnswers();
+        }
+
+        async function reviewEssayAnswers() {
+            if(appState.essayAnswers.some(answer => !String(answer || '').trim())) {
+                return alert('Semua jawaban harus diisi sebelum AI melakukan review.');
+            }
+
+            const reviewing = document.getElementById('essay-reviewing');
+            const bar = document.getElementById('essay-review-bar');
+            const progressText = document.getElementById('essay-review-progress-text');
+            const nextBtn = document.getElementById('essay-next-btn');
+            const container = document.getElementById('essay-container');
+
+            appState.essayReviewing = true;
+            nextBtn.classList.add('hidden');
+            container.classList.add('hidden');
+            reviewing.classList.remove('hidden');
+            document.getElementById('essay-score-mini').textContent = 'AI reviewing...';
+            bar.style.width = '0%';
+            progressText.textContent = '0/100';
+
+            let progress = 0;
+            const progressTimer = setInterval(() => {
+                progress = Math.min(progress + Math.floor(Math.random() * 8) + 3, 90);
+                bar.style.width = `${progress}%`;
+                progressText.textContent = `${progress}/100`;
+            }, 180);
+
+            const items = appState.essayData.map((q, i) => ({
+                nomor: i + 1,
+                soal: q.soal,
+                jawaban_acuan: q.jawaban_acuan,
+                rubrik: q.rubrik,
+                jawaban_siswa: appState.essayAnswers[i]
+            }));
+
+            const prompt = `Kamu adalah guru yang objektif. Review SEMUA jawaban siswa di bawah sekaligus, bukan satu per satu melalui percakapan. Gunakan bahan utama yang menjadi dasar soal, jawaban acuan, dan rubrik. Beri skor 0-100 untuk SETIAP soal. Nilai berdasarkan ketepatan konsep, kelengkapan, dan relevansi; jangan menuntut kata-kata persis.
+
+Output WAJIB JSON array murni tanpa markdown, dengan jumlah item TEPAT ${items.length}. Format setiap item: {"nomor":1,"score":85,"status":"Benar/Sebagian Benar/Perlu Diperbaiki","feedback":"Penjelasan singkat dan spesifik","jawaban_ideal":"Jawaban yang benar/ideal"}. Pastikan nomor sesuai soal.
+
+DATA ESSAY DAN JAWABAN SISWA:
+${JSON.stringify(items)}`;
+
+            try {
+                const response = await callAI([{ role: 'user', content: prompt }]);
+                const data = parseJSONArrayResponse(response);
+                if(data.length < items.length) throw new Error(`AI hanya mereview ${data.length} soal dari ${items.length} soal.`);
+
+                appState.essayResults = appState.essayData.map((q, i) => {
+                    const found = data.find(r => Number(r.nomor) === i + 1) || data[i];
+                    const score = Math.max(0, Math.min(100, Number(found?.score) || 0));
+                    return {
+                        answer: appState.essayAnswers[i],
+                        score,
+                        status: String(found?.status || 'Dinilai'),
+                        feedback: String(found?.feedback || ''),
+                        jawaban_ideal: String(found?.jawaban_ideal || q.jawaban_acuan)
+                    };
+                });
+
+                clearInterval(progressTimer);
+                bar.style.width = '100%';
+                progressText.textContent = '100/100';
+                appState.essayReviewing = false;
+
+                setTimeout(() => {
+                    reviewing.classList.add('hidden');
+                    finishEssayQuiz();
+                }, 350);
+            } catch(e) {
+                clearInterval(progressTimer);
+                appState.essayReviewing = false;
+                reviewing.classList.add('hidden');
+                container.classList.remove('hidden');
+                nextBtn.classList.remove('hidden');
+                nextBtn.disabled = false;
+                nextBtn.innerHTML = '<i class="fa-solid fa-flag-checkered mr-2"></i> Selesai & Review Jawaban';
+                alert('Gagal mereview jawaban dengan AI. Detail: ' + e.message);
             }
         }
 
         function finishEssayQuiz() {
-            const results = appState.essayResults.filter(Boolean);
+            const results = appState.essayResults;
             const total = appState.essayData.length;
-            const average = total ? Math.round(results.reduce((sum, r) => sum + Number(r.score || 0), 0) / total) : 0;
+            const average = total ? Math.round(results.reduce((sum, r) => sum + Number(r?.score || 0), 0) / total) : 0;
+            const totalPoints = results.reduce((sum, r) => sum + Number(r?.score || 0), 0);
             document.getElementById('essay-container').classList.add('hidden');
-            document.getElementById('essay-feedback').classList.add('hidden');
-            document.getElementById('essay-submit-btn').classList.add('hidden');
             document.getElementById('essay-next-btn').classList.add('hidden');
             document.getElementById('essay-final').classList.remove('hidden');
-            document.getElementById('essay-final-score').textContent = `Nilai rata-rata: ${average}/100 (${results.length}/${total} soal dinilai)`;
+            document.getElementById('essay-final-score').textContent = `Nilai rata-rata: ${average}/100 • Total poin: ${totalPoints}/${total * 100}`;
+            document.getElementById('essay-score-mini').textContent = `${average}/100`;
+            appState.essaySubmitted = true;
             buildEssayReview();
         }
 
         function buildEssayReview() {
             const review = document.getElementById('essay-review');
             review.innerHTML = appState.essayData.map((q, i) => {
-                const r = appState.essayResults[i];
-                return `<div class="border border-gray-200 rounded-xl p-4"><div class="font-bold mb-2">${i + 1}. ${escapeHTML(q.soal)}</div><div class="text-sm text-gray-600 mb-2"><strong>Jawaban kamu:</strong> ${escapeHTML(r?.answer || '-')}</div><div class="text-sm font-semibold text-primary mb-1">Skor: ${r?.score ?? 0}/100</div><div class="text-sm text-gray-600"><strong>Feedback:</strong> ${escapeHTML(r?.feedback || '-')}</div><div class="text-sm text-gray-600 mt-2"><strong>Jawaban ideal:</strong> ${escapeHTML(r?.jawaban_ideal || q.jawaban_acuan)}</div></div>`;
+                const r = appState.essayResults[i] || {};
+                return `<div class="border border-gray-200 rounded-xl p-4 bg-gray-50">
+                    <div class="flex items-start justify-between gap-4 mb-3">
+                        <div class="font-bold">${i + 1}. ${escapeHTML(q.soal)}</div>
+                        <span class="shrink-0 text-sm font-bold text-primary">${r.score ?? 0}/100</span>
+                    </div>
+                    <div class="text-sm text-gray-700 mb-2"><strong>Jawaban kamu:</strong><div class="mt-1 whitespace-pre-wrap">${escapeHTML(r.answer || '-')}</div></div>
+                    <div class="text-sm font-semibold text-gray-800 mb-1">Status: ${escapeHTML(r.status || '-')}</div>
+                    <div class="text-sm text-gray-600 mb-2"><strong>Feedback AI:</strong> ${escapeHTML(r.feedback || '-')}</div>
+                    <div class="text-sm text-green-700"><strong>Jawaban yang benar/ideal:</strong> ${escapeHTML(r.jawaban_ideal || q.jawaban_acuan || '-')}</div>
+                </div>`;
             }).join('');
         }
 
@@ -1457,18 +1513,20 @@ ${answer}`;
 
         function resetEssayQuiz() {
             appState.essayData = [];
+            appState.essayAnswers = [];
             appState.essayResults = [];
             appState.essayCurrentIndex = 0;
             appState.essaySubmitted = false;
+            appState.essayReviewing = false;
             document.getElementById('essay-final').classList.add('hidden');
+            document.getElementById('essay-reviewing').classList.add('hidden');
             document.getElementById('essay-container').classList.remove('hidden');
-            document.getElementById('essay-feedback').classList.remove('hidden');
-            document.getElementById('essay-submit-btn').classList.remove('hidden');
             document.getElementById('essay-next-btn').classList.add('hidden');
             document.getElementById('essay-setup-card').classList.remove('hidden');
             document.getElementById('essay-review').classList.add('hidden');
             document.getElementById('essay-review-toggle-text').textContent = 'Tampilkan Soal, Jawaban & Penilaian';
-            document.getElementById('essay-feedback').classList.add('hidden');
+            document.getElementById('essay-review-bar').style.width = '0%';
+            document.getElementById('essay-review-progress-text').textContent = '0/100';
         }
 
         async function processMindMap() {
