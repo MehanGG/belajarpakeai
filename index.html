@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Learning Assistant - Clone</title>
+    <title>belajarpakeai - AI Learning Assistant</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome -->
@@ -28,7 +28,6 @@
         }
     </script>
     <style>
-        /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
@@ -62,6 +61,58 @@
         .prose h1, .prose h2, .prose h3 { font-weight: bold; margin-top: 1.5em; margin-bottom: 0.5em; }
         .prose ul { list-style-type: disc; padding-left: 1.5em; margin-bottom: 1em; }
         .prose ol { list-style-type: decimal; padding-left: 1.5em; margin-bottom: 1em; }
+        .youtube-preview iframe { width: 100%; aspect-ratio: 16 / 9; border: 0; border-radius: 0.75rem; }
+
+        /* Dark mode overrides so the existing UI layout/classes remain unchanged. */
+        html.dark body { background: #0f172a !important; color: #e2e8f0 !important; }
+        html.dark .bg-white { background-color: #111827 !important; }
+        html.dark .bg-gray-50 { background-color: #0f172a !important; }
+        html.dark .bg-gray-100 { background-color: #1f2937 !important; }
+        html.dark .text-gray-800 { color: #e5e7eb !important; }
+        html.dark .text-gray-700 { color: #d1d5db !important; }
+        html.dark .text-gray-600 { color: #cbd5e1 !important; }
+        html.dark .text-gray-500 { color: #94a3b8 !important; }
+        html.dark .text-gray-400 { color: #94a3b8 !important; }
+        html.dark .border-gray-200 { border-color: #334155 !important; }
+        html.dark .border-gray-300 { border-color: #475569 !important; }
+        html.dark .border-gray-100 { border-color: #1f2937 !important; }
+        html.dark .border-gray-200\/80 { border-color: #334155 !important; }
+        html.dark input,
+        html.dark textarea,
+        html.dark select {
+            background-color: #0f172a !important;
+            color: #e2e8f0 !important;
+            border-color: #475569 !important;
+        }
+        html.dark input::placeholder,
+        html.dark textarea::placeholder { color: #64748b !important; }
+        html.dark .hover\\:bg-gray-100:hover { background-color: #1f2937 !important; }
+        html.dark .drop-zone { border-color: #475569; background-color: #111827 !important; }
+        html.dark .drop-zone.dragover { border-color: #818cf8; background-color: #1e1b4b !important; }
+        html.dark .bg-indigo-50 { background-color: #1e1b4b !important; }
+        html.dark .text-indigo-900 { color: #c7d2fe !important; }
+        html.dark .text-indigo-700 { color: #a5b4fc !important; }
+        html.dark .border-indigo-200 { border-color: #3730a3 !important; }
+        html.dark .bg-blue-50 { background-color: #172554 !important; }
+        html.dark .bg-green-50 { background-color: #052e16 !important; }
+        html.dark .bg-green-100 { background-color: #14532d !important; }
+        html.dark .text-green-700 { color: #bbf7d0 !important; }
+        html.dark .bg-red-50 { background-color: #450a0a !important; }
+        html.dark .bg-red-100 { background-color: #7f1d1d !important; }
+        html.dark .text-red-700 { color: #fecaca !important; }
+        html.dark .bg-gray-200 { background-color: #334155 !important; }
+        html.dark .hover\\:bg-gray-300:hover { background-color: #475569 !important; }
+        html.dark .text-gray-800.prose, html.dark .prose { color: #e2e8f0; }
+        html.dark .prose a { color: #a5b4fc; }
+        html.dark .prose code { background: #1f2937; }
+        html.dark .prose blockquote { color: #cbd5e1; border-color: #475569; }
+        html.dark .shadow-sm { box-shadow: 0 1px 2px 0 rgba(0,0,0,.25); }
+        html.dark #master-pdf-container { background: #fff !important; color: #111827 !important; }
+        html.dark ::-webkit-scrollbar-track { background: #111827; }
+        html.dark ::-webkit-scrollbar-thumb { background: #475569; }
+
+        .theme-card { transition: all .2s ease; }
+        .theme-card.active { border-color: #4f46e5 !important; box-shadow: 0 0 0 2px rgba(79,70,229,.15); }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800 h-screen flex overflow-hidden font-sans">
@@ -73,7 +124,7 @@
     <aside id="sidebar" class="bg-white w-64 border-r border-gray-200 flex flex-col h-full fixed md:relative z-50 transform -translate-x-full md:translate-x-0 transition-transform duration-300">
         <div class="p-4 border-b border-gray-200 flex justify-between items-center">
             <h1 class="text-xl font-bold text-primary flex items-center gap-2">
-                <i class="fa-solid fa-graduation-cap"></i> Pelajarin Clone
+                <i class="fa-solid fa-graduation-cap"></i> belajarpakeai
             </h1>
             <button class="md:hidden text-gray-500" onclick="toggleSidebar()"><i class="fa-solid fa-times"></i></button>
         </div>
@@ -82,8 +133,6 @@
         <div class="p-4 border-b border-gray-200 bg-gray-50 overflow-y-auto max-h-72">
             <h2 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Pengaturan API</h2>
             <div class="space-y-3">
-                
-                <!-- Provider Select -->
                 <div>
                     <label class="text-xs text-gray-600 block mb-1 font-medium">Provider AI:</label>
                     <select id="api-provider" class="w-full text-sm p-2 border border-gray-300 rounded focus:ring-2 focus:ring-primary outline-none" onchange="changeProvider()">
@@ -93,13 +142,11 @@
                     </select>
                 </div>
 
-                <!-- API Key -->
                 <div>
                     <label class="text-xs text-gray-600 block mb-1 font-medium">API Key:</label>
                     <input type="password" id="api-key" placeholder="Masukkan API Key Gemini" class="w-full text-sm p-2 border border-gray-300 rounded focus:ring-2 focus:ring-primary outline-none">
                 </div>
 
-                <!-- Base URL (Advanced / Proxy) -->
                 <div>
                     <label class="text-xs text-gray-600 block mb-1 font-medium">Base URL (Opsional/Proxy):</label>
                     <input type="text" id="api-base-url" value="https://generativelanguage.googleapis.com/v1beta/openai" placeholder="URL Endpoint" class="w-full text-xs p-2 border border-gray-300 rounded text-gray-500 focus:ring-2 focus:ring-primary outline-none bg-gray-50">
@@ -109,7 +156,6 @@
                     Simpan & Verifikasi
                 </button>
                 
-                <!-- Model Select -->
                 <div id="model-select-container" class="hidden border-t border-gray-200 pt-3 mt-3">
                     <label class="text-xs font-semibold text-primary block mb-1">Model Tersedia:</label>
                     <select id="ai-model" class="w-full text-sm p-2 border border-primary rounded bg-indigo-50 text-indigo-900 outline-none focus:ring-2 focus:ring-primary"></select>
@@ -132,12 +178,20 @@
             <button onclick="switchTab('kerjakan')" class="nav-btn w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100" data-tab="kerjakan">
                 <i class="fa-solid fa-pen-to-square w-5 text-center"></i> Kerjakan Soal
             </button>
+            <button onclick="switchTab('youtube')" class="nav-btn w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100" data-tab="youtube">
+                <i class="fa-brands fa-youtube w-5 text-center"></i> Catatan YouTube
+            </button>
+
+            <div class="pt-4 mt-4 border-t border-gray-200">
+                <button onclick="switchTab('settings')" class="nav-btn w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100" data-tab="settings">
+                    <i class="fa-solid fa-gear w-5 text-center"></i> Settings
+                </button>
+            </div>
         </nav>
     </aside>
 
     <!-- Main Content -->
     <main class="flex-1 flex flex-col h-full relative">
-        <!-- Header Mobile -->
         <header class="bg-white border-b border-gray-200 p-4 flex items-center md:hidden">
             <button onclick="toggleSidebar()" class="text-gray-600 mr-4"><i class="fa-solid fa-bars text-xl"></i></button>
             <h1 class="text-lg font-bold text-gray-800" id="mobile-title">Chat AI</h1>
@@ -146,7 +200,6 @@
         <!-- View: Chat AI -->
         <div id="view-chat" class="view-section flex flex-col h-full hidden">
             <div class="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 bg-gray-50" id="chat-messages">
-                <!-- Welcome Message -->
                 <div class="flex gap-4">
                     <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white shrink-0"><i class="fa-solid fa-robot text-sm"></i></div>
                     <div class="bg-white p-4 rounded-xl rounded-tl-none shadow-sm border border-gray-100 max-w-3xl">
@@ -181,13 +234,11 @@
                     Mulai Merangkum
                 </button>
 
-                <!-- Thinking UI -->
                 <div id="thinking-rangkum" class="hidden text-center py-8">
                     <div class="mb-3"><span class="thinking-dot"></span><span class="thinking-dot"></span><span class="thinking-dot"></span></div>
                     <p class="text-gray-500 font-medium">AI sedang berpikir dan merangkum materi...</p>
                 </div>
 
-                <!-- Result UI -->
                 <div id="result-rangkum" class="hidden space-y-4">
                     <div class="flex justify-between items-end mb-4 border-b pb-2">
                         <h3 class="text-xl font-bold text-gray-800">Hasil Rangkuman</h3>
@@ -263,6 +314,94 @@
                 <div id="result-kerjakan" class="hidden bg-white p-6 rounded-xl shadow-sm border border-gray-200 prose max-w-none"></div>
             </div>
         </div>
+
+        <!-- View: Catatan YouTube -->
+        <div id="view-youtube" class="view-section flex-col h-full hidden overflow-y-auto p-4 md:p-8">
+            <div class="max-w-4xl mx-auto w-full">
+                <div class="flex items-start gap-3 mb-2">
+                    <div class="w-11 h-11 rounded-xl bg-red-50 text-red-600 flex items-center justify-center shrink-0">
+                        <i class="fa-brands fa-youtube text-xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold">Catatan dari YouTube</h2>
+                        <p class="text-gray-600 mt-1">Paste link YouTube publik. Gemini akan menganalisis isi videonya lalu membuat materi lengkap.</p>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl p-4 md:p-5 shadow-sm border border-gray-200 mb-4">
+                    <label for="youtube-url" class="text-sm font-semibold text-gray-700 block mb-2">Link YouTube</label>
+                    <div class="flex flex-col md:flex-row gap-2">
+                        <input id="youtube-url" type="url" autocomplete="off" placeholder="https://www.youtube.com/watch?v=..." class="flex-1 p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary outline-none" oninput="updateYoutubePreview()" onpaste="setTimeout(updateYoutubePreview, 0)" onkeypress="if(event.key === 'Enter') processYoutubeNotes()">
+                        <button onclick="pasteYoutubeLink()" class="px-4 py-3 rounded-xl border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium transition-colors">
+                            <i class="fa-solid fa-paste mr-1"></i> Paste
+                        </button>
+                    </div>
+                    <p id="youtube-status" class="text-xs text-gray-500 mt-2">Hanya video YouTube publik yang dapat dianalisis langsung oleh Gemini.</p>
+                </div>
+
+                <div id="youtube-preview" class="youtube-preview hidden bg-white rounded-xl p-3 shadow-sm border border-gray-200 mb-4"></div>
+
+                <button id="youtube-analyze-btn" onclick="processYoutubeNotes()" class="w-full bg-primary hover:bg-secondary text-white py-3 rounded-xl font-semibold transition-colors mb-8 shadow-sm">
+                    <i class="fa-solid fa-sparkles mr-2"></i> Analisis Video & Buat Catatan
+                </button>
+
+                <div id="thinking-youtube" class="hidden text-center py-8">
+                    <div class="mb-3"><span class="thinking-dot"></span><span class="thinking-dot"></span><span class="thinking-dot"></span></div>
+                    <p class="text-gray-500 font-medium">AI sedang menonton, memahami, dan menyusun materi...</p>
+                </div>
+
+                <div id="result-youtube" class="hidden bg-white p-6 md:p-8 rounded-xl shadow-sm border border-gray-200 prose max-w-none"></div>
+            </div>
+        </div>
+
+        <!-- View: Settings -->
+        <div id="view-settings" class="view-section flex-col h-full hidden overflow-y-auto p-4 md:p-8">
+            <div class="max-w-4xl mx-auto w-full">
+                <h2 class="text-2xl font-bold mb-2">Settings</h2>
+                <p class="text-gray-600 mb-6">Atur tampilan belajarpakeai. Pilihan tema akan tersimpan di perangkat ini.</p>
+
+                <div class="bg-white rounded-xl p-5 md:p-6 shadow-sm border border-gray-200">
+                    <div class="flex items-center gap-3 mb-5">
+                        <div class="w-10 h-10 rounded-lg bg-indigo-50 text-primary flex items-center justify-center">
+                            <i class="fa-solid fa-palette"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-lg">Mode Tampilan</h3>
+                            <p class="text-sm text-gray-500">Pilih Light Mode atau Dark Mode.</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <button id="theme-light" onclick="setTheme('light')" class="theme-card text-left bg-white border-2 border-gray-200 rounded-xl p-4">
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="w-10 h-10 rounded-lg bg-gray-100 text-gray-700 flex items-center justify-center"><i class="fa-solid fa-sun"></i></div>
+                                <i id="theme-light-check" class="fa-solid fa-circle-check text-primary hidden"></i>
+                            </div>
+                            <div class="font-semibold">Light Mode</div>
+                            <div class="text-sm text-gray-500 mt-1">Tampilan terang untuk belajar sehari-hari.</div>
+                        </button>
+
+                        <button id="theme-dark" onclick="setTheme('dark')" class="theme-card text-left bg-white border-2 border-gray-200 rounded-xl p-4">
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="w-10 h-10 rounded-lg bg-gray-800 text-white flex items-center justify-center"><i class="fa-solid fa-moon"></i></div>
+                                <i id="theme-dark-check" class="fa-solid fa-circle-check text-primary hidden"></i>
+                            </div>
+                            <div class="font-semibold">Dark Mode</div>
+                            <div class="text-sm text-gray-500 mt-1">Tampilan gelap yang lebih nyaman di ruangan minim cahaya.</div>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="mt-4 bg-white rounded-xl p-5 md:p-6 shadow-sm border border-gray-200">
+                    <h3 class="font-bold text-lg mb-2">Status</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+                        <div class="bg-gray-50 rounded-lg p-3"><span class="text-gray-500 block">Provider</span><strong id="settings-provider">Gemini</strong></div>
+                        <div class="bg-gray-50 rounded-lg p-3"><span class="text-gray-500 block">Model</span><strong id="settings-model">Belum dipilih</strong></div>
+                        <div class="bg-gray-50 rounded-lg p-3"><span class="text-gray-500 block">Tema</span><strong id="settings-theme">Light Mode</strong></div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </main>
 
     <!-- Modal for Materi -->
@@ -283,7 +422,6 @@
     <div id="master-pdf-container" class="hidden bg-white p-8 prose max-w-none"></div>
 
     <script>
-        // State Management
         let appState = {
             provider: 'gemini',
             apiKey: '',
@@ -291,25 +429,52 @@
             models: [],
             selectedModel: '',
             chatHistory: [
-                { role: "system", content: "Anda adalah AI assistant pendidikan yang pintar, bernama Pelajarin AI. Selalu berikan jawaban yang jelas, terstruktur, dan akurat." }
+                { role: "system", content: "Anda adalah AI assistant pendidikan yang pintar, bernama belajarpakeai. Selalu berikan jawaban yang jelas, terstruktur, dan akurat." }
             ],
             files: {
                 rangkum: [],
                 quiz: [],
                 kerjakan: []
             },
-            quizData: []
+            quizData: [],
+            youtubeVideoId: ''
         };
 
         const limits = { rangkum: 25, quiz: 25, kerjakan: 10 };
 
-        // Initialization
         document.addEventListener('DOMContentLoaded', () => {
-            switchTab('chat');
+            loadTheme();
+            changeProvider();
+            switchTab('chat', true);
             setupDragAndDrop();
+            updateSettingsStatus();
         });
 
-        // Provider Change Logic
+        function loadTheme() {
+            const saved = localStorage.getItem('belajarpakeai-theme') || 'light';
+            setTheme(saved, true);
+        }
+
+        function setTheme(theme, silent = false) {
+            const normalized = theme === 'dark' ? 'dark' : 'light';
+            document.documentElement.classList.toggle('dark', normalized === 'dark');
+            localStorage.setItem('belajarpakeai-theme', normalized);
+
+            document.querySelectorAll('.theme-card').forEach(el => el.classList.remove('active'));
+            const activeCard = document.getElementById(`theme-${normalized}`);
+            if(activeCard) activeCard.classList.add('active');
+
+            const lightCheck = document.getElementById('theme-light-check');
+            const darkCheck = document.getElementById('theme-dark-check');
+            if(lightCheck) lightCheck.classList.toggle('hidden', normalized !== 'light');
+            if(darkCheck) darkCheck.classList.toggle('hidden', normalized !== 'dark');
+
+            const themeText = document.getElementById('settings-theme');
+            if(themeText) themeText.textContent = normalized === 'dark' ? 'Dark Mode' : 'Light Mode';
+
+            if(!silent) updateSettingsStatus();
+        }
+
         function changeProvider() {
             const provider = document.getElementById('api-provider').value;
             const baseUrlInput = document.getElementById('api-base-url');
@@ -318,7 +483,6 @@
 
             if(provider === 'gemini') {
                 apiKeyInput.placeholder = "Masukkan API Key Gemini";
-                // Menggunakan endpoint kompatibilitas OpenAI dari Google
                 baseUrlInput.value = 'https://generativelanguage.googleapis.com/v1beta/openai';
             } else if(provider === 'openai') {
                 apiKeyInput.placeholder = "Masukkan API Key OpenAI";
@@ -327,6 +491,7 @@
                 apiKeyInput.placeholder = "Masukkan API Key Anthropic";
                 baseUrlInput.value = 'https://api.anthropic.com/v1';
             }
+            updateSettingsStatus();
         }
 
         function toggleSidebar() {
@@ -336,10 +501,14 @@
             overlay.classList.toggle('hidden');
         }
 
-        function switchTab(tabId) {
-            document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
-            document.getElementById(`view-${tabId}`).classList.remove('hidden');
-            document.getElementById(`view-${tabId}`).classList.add('flex');
+        function switchTab(tabId, initial = false) {
+            document.querySelectorAll('.view-section').forEach(el => {
+                el.classList.add('hidden');
+                el.classList.remove('flex');
+            });
+            const target = document.getElementById(`view-${tabId}`);
+            target.classList.remove('hidden');
+            target.classList.add('flex');
             
             document.querySelectorAll('.nav-btn').forEach(btn => {
                 btn.classList.remove('bg-primary', 'text-white');
@@ -350,12 +519,15 @@
                 }
             });
 
-            const titles = { chat: 'Chat AI', rangkum: 'Rangkum Materi', quiz: 'Quiz', kerjakan: 'Kerjakan Soal' };
-            document.getElementById('mobile-title').innerText = titles[tabId];
-            if(window.innerWidth < 768) toggleSidebar();
+            const titles = { chat: 'Chat AI', rangkum: 'Rangkum Materi', quiz: 'Quiz', kerjakan: 'Kerjakan Soal', youtube: 'Catatan YouTube', settings: 'Settings' };
+            document.getElementById('mobile-title').innerText = titles[tabId] || 'belajarpakeai';
+            if(window.innerWidth < 768 && !initial) {
+                const sidebar = document.getElementById('sidebar');
+                if(!sidebar.classList.contains('-translate-x-full')) toggleSidebar();
+            }
+            updateSettingsStatus();
         }
 
-        // API & AI Core Logic
         async function verifyAPI() {
             const key = document.getElementById('api-key').value.trim();
             const baseUrlInput = document.getElementById('api-base-url').value.trim();
@@ -363,6 +535,7 @@
             if(!key) return alert("Masukkan API Key terlebih dahulu!");
             
             const btn = document.querySelector('button[onclick="verifyAPI()"]');
+            const originalText = btn.innerText;
             btn.innerText = "Memverifikasi...";
             btn.disabled = true;
 
@@ -372,37 +545,29 @@
 
             try {
                 if (appState.provider === 'gemini') {
-                    // Fetch model list dari Native API Google
-                    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`);
-                    if(!res.ok) throw new Error("API Key Gemini tidak valid");
+                    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(key)}`);
+                    if(!res.ok) throw new Error("API Key Gemini tidak valid atau akses model ditolak");
                     const data = await res.json();
-                    appState.models = data.models
-                        .filter(m => m.supportedGenerationMethods.includes('generateContent'))
+                    appState.models = (data.models || [])
+                        .filter(m => Array.isArray(m.supportedGenerationMethods) && m.supportedGenerationMethods.includes('generateContent'))
                         .map(m => m.name.replace('models/', ''));
-                        
                 } else if (appState.provider === 'openai') {
-                    // Standar OpenAI model fetch
                     const res = await fetch(`${appState.baseUrl}/models`, {
                         method: 'GET',
                         headers: { 'Authorization': `Bearer ${key}` }
                     });
                     if(!res.ok) throw new Error("API Key OpenAI tidak valid");
                     const data = await res.json();
-                    appState.models = data.data.map(m => m.id);
-                    
+                    appState.models = (data.data || []).map(m => m.id).filter(Boolean);
                 } else if (appState.provider === 'anthropic') {
-                    // Anthropic tidak memiliki endpoint /models yang terbuka untuk umum
-                    // Kita bypass dengan memberikan list model terbaru hardcoded
-                    throw new Error("Bypass ke Fallback List untuk Anthropic (CORS/No API)");
+                    // Anthropic browser-direct model discovery is not generally available.
+                    throw new Error("Fallback list Anthropic");
                 }
                 
-                if(appState.models.length === 0) throw new Error("Kosong");
+                if(appState.models.length === 0) throw new Error("Tidak ada model yang tersedia");
                 renderModelSelection(btn, true);
-
             } catch(e) {
-                console.warn("Menggunakan Mode Fallback (Daftar Model Terbaru Default).", e);
-                
-                // FALLBACK MODE (Memastikan model terbaru lengkap sesuai instruksi)
+                console.warn("Menggunakan daftar model fallback:", e);
                 if(appState.provider === 'gemini') {
                     appState.models = ['gemini-2.5-pro', 'gemini-2.5-flash', 'gemini-2.0-flash-exp', 'gemini-2.0-flash', 'gemini-1.5-pro', 'gemini-1.5-flash'];
                 } else if (appState.provider === 'anthropic') {
@@ -410,7 +575,6 @@
                 } else {
                     appState.models = ['gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo', 'gpt-3.5-turbo', 'o1-preview', 'o1-mini'];
                 }
-                
                 renderModelSelection(btn, false);
             }
         }
@@ -419,28 +583,38 @@
             const select = document.getElementById('ai-model');
             select.innerHTML = '';
             
-            // Sort agar yang terbaru/populer ada di atas
-            const sortedModels = appState.models.sort((a, b) => {
-                if(a.includes('2.5') || a.includes('3-7') || a.includes('gpt-4o')) return -1;
-                return 0;
+            const uniqueModels = [...new Set(appState.models)];
+            const sortedModels = uniqueModels.sort((a, b) => {
+                const score = name => {
+                    if(name.includes('3.8') || name.includes('3.7') || name.includes('2.5') || name.includes('gpt-4.1') || name.includes('gpt-4o')) return -2;
+                    if(name.includes('2.0') || name.includes('3-5')) return -1;
+                    return 0;
+                };
+                return score(a) - score(b) || a.localeCompare(b);
             });
 
             sortedModels.forEach(model => {
                 const option = document.createElement('option');
                 option.value = model;
                 option.text = model;
-                // Auto select default terbaik
-                if(model.includes('2.5-pro') || model.includes('3-5-sonnet') || model === 'gpt-4o') option.selected = true;
                 select.appendChild(option);
             });
-            
+
+            const preferred = sortedModels.find(model =>
+                model.includes('gemini-3.8-flash') || model.includes('gemini-2.5-pro') || model.includes('claude-3-5-sonnet') || model === 'gpt-4o'
+            );
+            select.value = preferred || sortedModels[0] || '';
             appState.selectedModel = select.value;
-            select.addEventListener('change', (e) => appState.selectedModel = e.target.value);
-            
+            select.onchange = (e) => {
+                appState.selectedModel = e.target.value;
+                updateSettingsStatus();
+            };
             document.getElementById('model-select-container').classList.remove('hidden');
+            updateSettingsStatus();
             
-            btn.innerText = "Terverifikasi!";
-            btn.classList.replace('bg-primary', 'bg-green-600');
+            btn.innerText = isSuccess ? "Terverifikasi!" : "Terverifikasi (Fallback)!";
+            btn.classList.remove('bg-primary', 'bg-green-600');
+            btn.classList.add('bg-green-600');
             
             setTimeout(() => {
                 btn.innerText = "Simpan & Verifikasi Ulang";
@@ -450,13 +624,11 @@
             }, 2500);
         }
 
-        // Fungsi Pemanggil AI Dinamis (Multi-Provider)
         async function callAI(messages) {
             if(!appState.apiKey || !appState.selectedModel || !appState.baseUrl) {
                 throw new Error("Silakan verifikasi API Key di menu Pengaturan API terlebih dahulu.");
             }
 
-            // Jika Provider Anthropic (Memerlukan format Payload Spesifik)
             if (appState.provider === 'anthropic') {
                 let anthropicMessages = [];
                 let systemStr = "";
@@ -470,12 +642,12 @@
                             msg.content.forEach(c => {
                                 if(c.type === 'text') contentArr.push({ type: 'text', text: c.text });
                                 else if(c.type === 'image_url') {
-                                    // Parse Base64 URL (data:image/jpeg;base64,...)
                                     const parts = c.image_url.url.split(',');
-                                    const mime = parts[0].match(/:(.*?);/)[1];
+                                    const mimeMatch = parts[0].match(/:(.*?);/);
+                                    if(!mimeMatch || !parts[1]) throw new Error('Format gambar tidak valid.');
                                     contentArr.push({
                                         type: 'image',
-                                        source: { type: 'base64', media_type: mime, data: parts[1] }
+                                        source: { type: 'base64', media_type: mimeMatch[1], data: parts[1] }
                                     });
                                 }
                             });
@@ -492,7 +664,7 @@
                         'x-api-key': appState.apiKey,
                         'anthropic-version': '2023-06-01',
                         'content-type': 'application/json',
-                        'anthropic-dangerous-direct-browser-access': 'true' // Bypass blokir browser Claude
+                        'anthropic-dangerous-direct-browser-access': 'true'
                     },
                     body: JSON.stringify({
                         model: appState.selectedModel,
@@ -507,11 +679,8 @@
                     throw new Error(err.error?.message || `Error Claude API (Status: ${res.status})`);
                 }
                 const data = await res.json();
-                return data.content[0].text;
-            } 
-            
-            // Jika Provider OpenAI atau Gemini (Menggunakan Standar OpenAI Format)
-            else {
+                return data.content?.map(x => x.text || '').join('') || '';
+            } else {
                 const res = await fetch(`${appState.baseUrl}/chat/completions`, {
                     method: 'POST',
                     headers: {
@@ -529,18 +698,52 @@
                     const err = await res.json().catch(() => ({}));
                     throw new Error(err.error?.message || `Terjadi kesalahan. Status: ${res.status}`);
                 }
-                
                 const data = await res.json();
-                return data.choices[0].message.content;
+                return data.choices?.[0]?.message?.content || '';
             }
         }
 
-        // File Handling
+        // Direct Gemini video analysis for public YouTube URLs.
+        async function callGeminiYouTube(videoUrl, prompt) {
+            if(appState.provider !== 'gemini') {
+                throw new Error('Catatan YouTube memakai input video langsung Gemini. Pilih provider Google Gemini pada Pengaturan API terlebih dahulu.');
+            }
+            if(!appState.apiKey || !appState.selectedModel) {
+                throw new Error('Silakan verifikasi API Gemini terlebih dahulu.');
+            }
+
+            const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(appState.selectedModel)}:generateContent?key=${encodeURIComponent(appState.apiKey)}`;
+            const payload = {
+                contents: [{
+                    role: 'user',
+                    parts: [
+                        { file_data: { file_uri: videoUrl, mime_type: 'video/*' } },
+                        { text: prompt }
+                    ]
+                }]
+            };
+
+            const res = await fetch(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            const data = await res.json().catch(() => ({}));
+            if(!res.ok) {
+                const message = data.error?.message || `Gemini Video API error (Status: ${res.status})`;
+                throw new Error(message);
+            }
+
+            const text = data.candidates?.[0]?.content?.parts?.map(p => p.text || '').join('') || '';
+            if(!text) throw new Error('Gemini tidak mengembalikan isi catatan dari video tersebut.');
+            return text;
+        }
+
         function setupDragAndDrop() {
             ['rangkum', 'quiz', 'kerjakan'].forEach(type => {
                 const dropZone = document.getElementById(`drop-${type}`);
                 if(!dropZone) return;
-
                 dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
                 dropZone.addEventListener('dragleave', (e) => { e.preventDefault(); dropZone.classList.remove('dragover'); });
                 dropZone.addEventListener('drop', (e) => {
@@ -554,16 +757,20 @@
         async function handleFiles(type, newFiles) {
             const max = limits[type];
             let current = appState.files[type].length;
-            
             for(let i = 0; i < newFiles.length; i++) {
                 if(current >= max) {
                     alert(`Maksimal ${max} file untuk fitur ini.`);
                     break;
                 }
                 const file = newFiles[i];
-                const base64 = await toBase64(file);
-                appState.files[type].push({ name: file.name, type: file.type, data: base64 });
-                current++;
+                try {
+                    const base64 = await toBase64(file);
+                    appState.files[type].push({ name: file.name, type: file.type, data: base64 });
+                    current++;
+                } catch(e) {
+                    console.error(e);
+                    alert(`Gagal membaca file ${file.name}.`);
+                }
             }
             renderFileList(type);
         }
@@ -582,6 +789,10 @@
             renderFileList(type);
         }
 
+        function escapeHTML(value) {
+            return String(value).replace(/[&<>'"]/g, ch => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#39;', '"':'&quot;' }[ch]));
+        }
+
         function renderFileList(type) {
             const container = document.getElementById(`files-list-${type}`);
             container.innerHTML = '';
@@ -591,11 +802,20 @@
                 container.innerHTML += `
                     <div class="flex items-center gap-2 bg-gray-100 px-3 py-1.5 rounded-full text-xs font-medium border border-gray-200">
                         <i class="fa-solid ${icon}"></i>
-                        <span class="truncate max-w-[100px]">${file.name}</span>
+                        <span class="truncate max-w-[100px]" title="${escapeHTML(file.name)}">${escapeHTML(file.name)}</span>
                         <button onclick="removeFile('${type}',${index})" class="text-red-500 hover:text-red-700 ml-1"><i class="fa-solid fa-times"></i></button>
                     </div>
                 `;
             });
+        }
+
+        function decodeBase64Utf8(base64String) {
+            try {
+                const bytes = Uint8Array.from(atob(base64String), c => c.charCodeAt(0));
+                return new TextDecoder('utf-8', { fatal: false }).decode(bytes);
+            } catch(e) {
+                return atob(base64String);
+            }
         }
 
         function buildFileContent(type) {
@@ -606,7 +826,7 @@
                 } else {
                     try {
                         const base64String = f.data.split(',')[1];
-                        const text = atob(base64String);
+                        const text = decodeBase64Utf8(base64String);
                         contentArray.push({ type: "text", text: `[Isi File: ${f.name}]\n${text}` });
                     } catch(e) {
                         contentArray.push({ type: "text", text: `[File terlampir: ${f.name} - Format harus gambar atau text]` });
@@ -616,7 +836,6 @@
             return contentArray;
         }
 
-        // --- Fitur Chat AI ---
         async function sendChat() {
             const input = document.getElementById('chat-input');
             const msg = input.value.trim();
@@ -640,21 +859,19 @@
 
             try {
                 const response = await callAI(appState.chatHistory);
-                document.getElementById(thinkId).remove();
+                document.getElementById(thinkId)?.remove();
                 appendChat('assistant', response);
                 appState.chatHistory.push({ role: 'assistant', content: response });
             } catch(e) {
-                document.getElementById(thinkId).remove();
-                appendChat('assistant', `<span class="text-red-500 font-medium"><i class="fa-solid fa-triangle-exclamation"></i> Error: ${e.message}</span>`);
+                document.getElementById(thinkId)?.remove();
+                appendChat('assistant', `<span class="text-red-500 font-medium"><i class="fa-solid fa-triangle-exclamation"></i> Error: ${escapeHTML(e.message)}</span>`);
             }
         }
 
         function appendChat(role, text) {
             const container = document.getElementById('chat-messages');
             const isUser = role === 'user';
-            
-            let contentHTML = isUser ? text : marked.parse(text);
-            
+            const contentHTML = isUser ? escapeHTML(text).replace(/\n/g, '<br>') : marked.parse(text);
             const bubble = `
                 <div class="flex gap-4 ${isUser ? 'flex-row-reverse' : ''}">
                     <div class="w-8 h-8 rounded-full ${isUser ? 'bg-gray-800' : 'bg-primary'} flex items-center justify-center text-white shrink-0">
@@ -669,35 +886,22 @@
             container.scrollTop = container.scrollHeight;
         }
 
-        // --- Fitur Rangkum Materi ---
         async function processRangkuman() {
             if(appState.files.rangkum.length === 0) return alert("Harap upload dokumen atau foto materi terlebih dahulu!");
-            
             document.getElementById('thinking-rangkum').classList.remove('hidden');
             document.getElementById('result-rangkum').classList.add('hidden');
-            
             let promptContent = [
-                { type: "text", text: `Buatkan rangkuman komprehensif dari materi yang dilampirkan. Bagikan menjadi beberapa BAB. 
-PENTING: Output HARUS dalam format JSON array murni tanpa text pendahuluan dan tanpa block markdown (\`\`\`json).
-Format JSON yang diharapkan:
-[
-  { "bab": "BAB 1 (Judul Bab)", "konten": "Isi rangkuman dalam format markdown/HTML" },
-  { "bab": "BAB 2 (Judul Bab)", "konten": "Isi rangkuman dalam format markdown/HTML" }
-]` }
+                { type: "text", text: `Buatkan rangkuman komprehensif dari materi yang dilampirkan. Bagikan menjadi beberapa BAB.\nPENTING: Output HARUS dalam format JSON array murni tanpa text pendahuluan dan tanpa block markdown (JSON tanpa code fence).\nFormat JSON yang diharapkan:\n[\n  { "bab": "BAB 1 (Judul Bab)", "konten": "Isi rangkuman dalam format markdown/HTML" },\n  { "bab": "BAB 2 (Judul Bab)", "konten": "Isi rangkuman dalam format markdown/HTML" }\n]` }
             ].concat(buildFileContent('rangkum'));
-
             try {
                 let response = await callAI([{ role: 'user', content: promptContent }]);
-                
-                // Parser JSON yang tangguh membuang karakter tak diinginkan
                 response = response.replace(/```json/g, '').replace(/```/g, '').trim();
                 const startIndex = response.indexOf('[');
                 const endIndex = response.lastIndexOf(']') + 1;
-                const cleanJson = response.slice(startIndex, endIndex);
-                
-                const data = JSON.parse(cleanJson);
+                if(startIndex < 0 || endIndex <= startIndex) throw new Error('Respons AI bukan JSON array yang valid.');
+                const data = JSON.parse(response.slice(startIndex, endIndex));
+                if(!Array.isArray(data)) throw new Error('Format rangkuman tidak valid.');
                 renderRangkumanResult(data);
-                
                 document.getElementById('thinking-rangkum').classList.add('hidden');
                 document.getElementById('result-rangkum').classList.remove('hidden');
             } catch(e) {
@@ -711,31 +915,30 @@ Format JSON yang diharapkan:
             const masterContainer = document.getElementById('master-pdf-container');
             container.innerHTML = '';
             masterContainer.innerHTML = '<h1 style="text-align:center;">Rangkuman Materi Lengkap</h1><hr/>';
-
-            window.rangkumanData = data; 
-
+            window.rangkumanData = data;
             data.forEach((item, index) => {
+                const safeBab = escapeHTML(item.bab || `BAB ${index + 1}`);
                 container.innerHTML += `
                     <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
-                        <h4 class="font-bold text-lg text-gray-800">${item.bab}</h4>
+                        <h4 class="font-bold text-lg text-gray-800">${safeBab}</h4>
                         <div class="flex gap-2">
                             <button onclick="openMateriModal(${index})" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-4 py-2 rounded-lg text-sm font-semibold transition-colors border border-indigo-200">
                                 <i class="fa-solid fa-eye"></i> Lihat Materi
                             </button>
-                            <button onclick="downloadPDF(null, '${item.bab}.pdf',${index})" class="bg-primary hover:bg-secondary text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors">
+                            <button onclick="downloadPDF(null, 'Rangkuman_Bab_${index + 1}.pdf',${index})" class="bg-primary hover:bg-secondary text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors">
                                 <i class="fa-solid fa-file-pdf"></i> Download PDF
                             </button>
                         </div>
                     </div>
                 `;
-                masterContainer.innerHTML += `<h2>${item.bab}</h2>${marked.parse(item.konten)}<br><hr><br>`;
+                masterContainer.innerHTML += `<h2>${safeBab}</h2>${marked.parse(item.konten || '')}<br><hr><br>`;
             });
         }
 
         function openMateriModal(index) {
             const data = window.rangkumanData[index];
-            document.getElementById('modal-title').innerText = data.bab;
-            document.getElementById('modal-content').innerHTML = marked.parse(data.konten);
+            document.getElementById('modal-title').innerText = data.bab || `BAB ${index + 1}`;
+            document.getElementById('modal-content').innerHTML = marked.parse(data.konten || '');
             document.getElementById('materi-modal').classList.remove('hidden');
         }
 
@@ -743,35 +946,22 @@ Format JSON yang diharapkan:
             document.getElementById('materi-modal').classList.add('hidden');
         }
 
-        // --- Fitur Quiz ---
         async function processQuiz() {
             if(appState.files.quiz.length === 0) return alert("Harap upload materi untuk dijadikan kuis!");
-            
             document.getElementById('thinking-quiz').classList.remove('hidden');
             document.getElementById('result-quiz').classList.add('hidden');
-            
             let promptContent = [
-                { type: "text", text: `Buatkan 5 soal pilihan ganda berdasarkan materi ini.
-PENTING: Output HARUS berupa JSON array murni tanpa text pendahuluan dan tanpa block markdown (\`\`\`json).
-Format:
-[
-  { "soal": "Pertanyaan?", "opsi": ["A. pilihan1", "B. pilihan2", "C. pilihan3", "D. pilihan4"], "jawaban": 0 },
-  ...
-]
-(jawaban adalah index array dari 0-3)` }
+                { type: "text", text: `Buatkan 5 soal pilihan ganda berdasarkan materi ini.\nPENTING: Output HARUS berupa JSON array murni tanpa text pendahuluan dan tanpa block markdown (JSON tanpa code fence).\nFormat:\n[\n  { "soal": "Pertanyaan?", "opsi": ["A. pilihan1", "B. pilihan2", "C. pilihan3", "D. pilihan4"], "jawaban": 0 },\n  ...\n]\n(jawaban adalah index array dari 0-3)` }
             ].concat(buildFileContent('quiz'));
-
             try {
                 let response = await callAI([{ role: 'user', content: promptContent }]);
-                
                 response = response.replace(/```json/g, '').replace(/```/g, '').trim();
                 const startIndex = response.indexOf('[');
                 const endIndex = response.lastIndexOf(']') + 1;
-                const cleanJson = response.slice(startIndex, endIndex);
-
-                appState.quizData = JSON.parse(cleanJson);
+                if(startIndex < 0 || endIndex <= startIndex) throw new Error('Respons AI bukan JSON array yang valid.');
+                appState.quizData = JSON.parse(response.slice(startIndex, endIndex));
+                if(!Array.isArray(appState.quizData) || !appState.quizData.length) throw new Error('Data quiz kosong atau tidak valid.');
                 renderQuiz();
-                
                 document.getElementById('thinking-quiz').classList.add('hidden');
                 document.getElementById('result-quiz').classList.remove('hidden');
             } catch(e) {
@@ -784,20 +974,19 @@ Format:
             const container = document.getElementById('quiz-container');
             container.innerHTML = '';
             document.getElementById('quiz-score').classList.add('hidden');
-            
             appState.quizData.forEach((q, qIndex) => {
                 let optionsHTML = '';
-                q.opsi.forEach((opt, oIndex) => {
+                (q.opsi || []).forEach((opt, oIndex) => {
                     optionsHTML += `
                         <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50 mb-2 transition-colors option-lbl-${qIndex}">
                             <input type="radio" name="q${qIndex}" value="${oIndex}" class="w-4 h-4 text-primary mr-3">
-                            <span class="text-sm">${opt}</span>
+                            <span class="text-sm">${escapeHTML(opt)}</span>
                         </label>
                     `;
                 });
                 container.innerHTML += `
                     <div class="mb-6">
-                        <p class="font-bold text-gray-800 mb-3">${qIndex + 1}. ${q.soal}</p>
+                        <p class="font-bold text-gray-800 mb-3">${qIndex + 1}. ${escapeHTML(q.soal || '')}</p>
                         <div class="space-y-1">${optionsHTML}</div>
                     </div>
                 `;
@@ -809,58 +998,45 @@ Format:
             appState.quizData.forEach((q, qIndex) => {
                 const selected = document.querySelector(`input[name="q${qIndex}"]:checked`);
                 const labels = document.querySelectorAll(`.option-lbl-${qIndex}`);
-                
-                labels.forEach(l => {
-                    l.classList.remove('bg-green-100', 'border-green-400', 'bg-red-100', 'border-red-400');
-                });
-
+                labels.forEach(l => l.classList.remove('bg-green-100', 'border-green-400', 'bg-red-100', 'border-red-400'));
                 if(selected) {
-                    const ans = parseInt(selected.value);
+                    const ans = parseInt(selected.value, 10);
                     if(ans === q.jawaban) {
                         score++;
                         selected.parentElement.classList.add('bg-green-100', 'border-green-400');
                     } else {
                         selected.parentElement.classList.add('bg-red-100', 'border-red-400');
-                        labels[q.jawaban].classList.add('bg-green-50', 'border-green-400', 'text-green-700'); 
+                        if(labels[q.jawaban]) labels[q.jawaban].classList.add('bg-green-50', 'border-green-400', 'text-green-700'); 
                     }
-                } else {
+                } else if(labels[q.jawaban]) {
                     labels[q.jawaban].classList.add('bg-green-50', 'border-green-400', 'text-green-700');
                 }
             });
-
             const scoreDiv = document.getElementById('quiz-score');
             const total = appState.quizData.length;
-            const percentage = (score / total) * 100;
-            
+            const percentage = total ? (score / total) * 100 : 0;
             scoreDiv.classList.remove('hidden', 'bg-green-100', 'text-green-700', 'bg-red-100', 'text-red-700');
             if(percentage >= 70) {
                 scoreDiv.classList.add('bg-green-100', 'text-green-700');
-                scoreDiv.innerText = `Luar Biasa! Nilai Kamu: ${score}/${total} (${percentage}%)`;
+                scoreDiv.innerText = `Luar Biasa! Nilai Kamu: ${score}/${total} (${percentage.toFixed(0)}%)`;
             } else {
                 scoreDiv.classList.add('bg-red-100', 'text-red-700');
-                scoreDiv.innerText = `Terus Belajar! Nilai Kamu: ${score}/${total} (${percentage}%)`;
+                scoreDiv.innerText = `Terus Belajar! Nilai Kamu: ${score}/${total} (${percentage.toFixed(0)}%)`;
             }
         }
 
-        // --- Fitur Kerjakan Soal ---
         async function processKerjakan() {
             const text = document.getElementById('kerjakan-text').value.trim();
             const files = appState.files.kerjakan;
-            
             if(!text && files.length === 0) return alert("Berikan teks soal atau upload gambar/file soal!");
-
             document.getElementById('thinking-kerjakan').classList.remove('hidden');
             document.getElementById('result-kerjakan').classList.add('hidden');
-
             let promptContent = [
-                { type: "text", text: `Bantu saya menyelesaikan soal atau tugas berikut. Berikan langkah-langkah penyelesaiannya dengan jelas dan detail menggunakan Markdown. \n\nSoal Tambahan:\n${text}` }
+                { type: "text", text: `Bantu saya menyelesaikan soal atau tugas berikut. Berikan langkah-langkah penyelesaiannya dengan jelas dan detail menggunakan Markdown.\n\nSoal Tambahan:\n${text}` }
             ].concat(buildFileContent('kerjakan'));
-
             try {
                 const response = await callAI([{ role: 'user', content: promptContent }]);
-                
                 document.getElementById('result-kerjakan').innerHTML = marked.parse(response);
-                
                 document.getElementById('thinking-kerjakan').classList.add('hidden');
                 document.getElementById('result-kerjakan').classList.remove('hidden');
             } catch(e) {
@@ -869,35 +1045,137 @@ Format:
             }
         }
 
-        // --- Fitur PDF Generator ---
+        function extractYoutubeId(input) {
+            try {
+                const url = new URL(input.trim());
+                const host = url.hostname.toLowerCase().replace(/^www\./, '');
+                if(host === 'youtu.be') return url.pathname.replace('/', '').split('/')[0] || '';
+                if(host === 'youtube.com' || host.endsWith('.youtube.com')) {
+                    if(url.pathname === '/watch') return url.searchParams.get('v') || '';
+                    if(url.pathname.startsWith('/shorts/')) return url.pathname.split('/')[2] || '';
+                    if(url.pathname.startsWith('/embed/')) return url.pathname.split('/')[2] || '';
+                    if(url.pathname.startsWith('/live/')) return url.pathname.split('/')[2] || '';
+                }
+            } catch(e) {}
+            return '';
+        }
+
+        function canonicalYoutubeUrl(input) {
+            const id = extractYoutubeId(input);
+            return id ? `https://www.youtube.com/watch?v=${encodeURIComponent(id)}` : '';
+        }
+
+        function updateYoutubePreview() {
+            const input = document.getElementById('youtube-url').value.trim();
+            const id = extractYoutubeId(input);
+            const preview = document.getElementById('youtube-preview');
+            const status = document.getElementById('youtube-status');
+            appState.youtubeVideoId = id;
+            if(id) {
+                preview.innerHTML = `<iframe src="https://www.youtube.com/embed/${encodeURIComponent(id)}" title="YouTube preview" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>`;
+                preview.classList.remove('hidden');
+                status.innerText = 'Link YouTube terdeteksi. Klik Analisis untuk membuat catatan lengkap.';
+                status.classList.remove('text-red-500');
+                status.classList.add('text-gray-500');
+            } else if(input) {
+                preview.innerHTML = '';
+                preview.classList.add('hidden');
+                status.innerText = 'Link YouTube belum valid. Gunakan link youtube.com/watch, youtu.be, Shorts, atau Live.';
+                status.classList.remove('text-gray-500');
+                status.classList.add('text-red-500');
+            } else {
+                preview.innerHTML = '';
+                preview.classList.add('hidden');
+                status.innerText = 'Hanya video YouTube publik yang dapat dianalisis langsung oleh Gemini.';
+                status.classList.remove('text-red-500');
+                status.classList.add('text-gray-500');
+            }
+        }
+
+        async function pasteYoutubeLink() {
+            try {
+                if(!navigator.clipboard?.readText) throw new Error('Clipboard API tidak tersedia di browser ini.');
+                const text = await navigator.clipboard.readText();
+                if(!text.trim()) throw new Error('Clipboard kosong.');
+                document.getElementById('youtube-url').value = text.trim();
+                updateYoutubePreview();
+            } catch(e) {
+                alert('Tidak bisa membaca clipboard otomatis. Paste link YouTube langsung ke kolom URL.');
+                document.getElementById('youtube-url').focus();
+            }
+        }
+
+        async function processYoutubeNotes() {
+            const rawUrl = document.getElementById('youtube-url').value.trim();
+            const videoUrl = canonicalYoutubeUrl(rawUrl);
+            if(!videoUrl) return alert('Masukkan link YouTube yang valid terlebih dahulu.');
+            if(appState.provider !== 'gemini') {
+                return alert('Fitur Catatan YouTube menggunakan input video langsung Gemini. Pilih Google Gemini di Pengaturan API, lalu Simpan & Verifikasi.');
+            }
+            if(!appState.apiKey || !appState.selectedModel) {
+                return alert('Verifikasi API Gemini terlebih dahulu di menu Pengaturan API.');
+            }
+
+            const btn = document.getElementById('youtube-analyze-btn');
+            const thinking = document.getElementById('thinking-youtube');
+            const result = document.getElementById('result-youtube');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Menganalisis...';
+            thinking.classList.remove('hidden');
+            result.classList.add('hidden');
+
+            const prompt = `Kamu adalah guru/tutor untuk siswa SMA Indonesia. Analisis video YouTube publik yang diberikan dan buat MATERI BELAJAR LENGKAP berdasarkan isi video, bukan sekadar ringkasan pendek.\n\nGunakan Markdown dan susun dengan struktur berikut:\n# Judul Materi\n## 1. Gambaran Umum\nJelaskan topik utama dan konteks video.\n## 2. Tujuan Pembelajaran\nBuat poin kemampuan yang dapat dipahami setelah belajar.\n## 3. Materi Lengkap\nJelaskan semua konsep penting yang benar-benar disampaikan video secara terstruktur menjadi subbab.\n## 4. Istilah/Kata Kunci\nJelaskan istilah penting beserta artinya.\n## 5. Contoh atau Penerapan\nCantumkan contoh yang disebutkan video; jangan mengarang detail yang tidak didukung isi video.\n## 6. Poin Penting untuk Diingat\nBuat daftar poin inti.\n## 7. Kesimpulan\nRangkum hasil belajar.\n\nAturan penting:\n- Gunakan bahasa Indonesia yang mudah dipahami siswa SMA.\n- Jangan mengaku mengetahui bagian yang tidak dapat dianalisis.\n- Jangan membuat fakta spesifik yang tidak berasal dari video atau pengetahuan umum yang jelas.\n- Bila audio/visual tertentu tidak jelas, katakan keterbatasannya secara singkat.\n- Prioritaskan isi pembelajaran, definisi, proses, contoh, sebab-akibat, dan istilah yang muncul dalam video.`;
+
+            try {
+                const response = await callGeminiYouTube(videoUrl, prompt);
+                result.innerHTML = marked.parse(response);
+                result.classList.remove('hidden');
+                result.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            } catch(e) {
+                alert('Gagal menganalisis video YouTube. Pastikan videonya publik dan API Gemini/model yang dipilih mendukung input video. Detail: ' + e.message);
+            } finally {
+                thinking.classList.add('hidden');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-sparkles mr-2"></i> Analisis Video & Buat Catatan';
+            }
+        }
+
         function downloadPDF(elementId, filename, dataIndex = null) {
             const opt = {
-                margin:       0.5,
-                filename:     filename,
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2 },
-                jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+                margin: 0.5,
+                filename: filename,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
             };
-
             let element;
             if(dataIndex !== null) {
                 element = document.createElement('div');
                 element.className = 'prose p-8';
-                element.innerHTML = `<h2>${window.rangkumanData[dataIndex].bab}</h2>${marked.parse(window.rangkumanData[dataIndex].konten)}`;
+                element.style.background = '#ffffff';
+                element.style.color = '#111827';
+                element.innerHTML = `<h2>${escapeHTML(window.rangkumanData[dataIndex].bab || `BAB ${dataIndex + 1}`)}</h2>${marked.parse(window.rangkumanData[dataIndex].konten || '')}`;
                 document.body.appendChild(element);
-                html2pdf().set(opt).from(element).save().then(() => document.body.removeChild(element));
+                html2pdf().set(opt).from(element).save().then(() => element.remove()).catch(() => element.remove());
             } else {
                 alert("Mohon tunggu, sedang menyusun PDF...");
                 element = document.getElementById(elementId);
-                element.classList.remove('hidden'); 
-                html2pdf().set(opt).from(element).save().then(() => {
-                    element.classList.add('hidden'); 
-                });
+                element.classList.remove('hidden');
+                html2pdf().set(opt).from(element).save().then(() => element.classList.add('hidden')).catch(() => element.classList.add('hidden'));
             }
         }
 
         function downloadAllPDF(id, filename) {
             downloadPDF('master-pdf-container', filename);
+        }
+
+        function updateSettingsStatus() {
+            const providerEl = document.getElementById('settings-provider');
+            const modelEl = document.getElementById('settings-model');
+            if(providerEl) providerEl.textContent = appState.provider === 'gemini' ? 'Google Gemini' : appState.provider === 'openai' ? 'OpenAI' : 'Anthropic';
+            if(modelEl) modelEl.textContent = appState.selectedModel || 'Belum dipilih';
+            const themeEl = document.getElementById('settings-theme');
+            if(themeEl) themeEl.textContent = document.documentElement.classList.contains('dark') ? 'Dark Mode' : 'Light Mode';
         }
     </script>
 </body>
