@@ -113,6 +113,20 @@
 
         .theme-card { transition: all .2s ease; }
         .theme-card.active { border-color: #4f46e5 !important; box-shadow: 0 0 0 2px rgba(79,70,229,.15); }
+        .quiz-progress-track { height: 8px; border-radius: 999px; background: #e5e7eb; overflow: hidden; }
+        .quiz-progress-bar { height: 100%; background: #4f46e5; border-radius: 999px; transition: width .25s ease; }
+        .quiz-option { transition: all .2s ease; }
+        .quiz-option.selected { border-color: #4f46e5; background: #eef2ff; box-shadow: 0 0 0 2px rgba(79,70,229,.12); }
+        .quiz-option.correct { border-color: #22c55e; background: #f0fdf4; }
+        .quiz-option.wrong { border-color: #ef4444; background: #fef2f2; }
+        .mindmap-wrap { overflow: auto; min-height: 420px; background: radial-gradient(circle at top, rgba(99,102,241,.08), transparent 45%); border: 1px solid #e5e7eb; border-radius: 16px; }
+        .mindmap-svg text { font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+        html.dark .quiz-progress-track { background: #334155; }
+        html.dark .quiz-option { border-color: #475569; background: #111827; }
+        html.dark .quiz-option.selected { border-color: #818cf8; background: #1e1b4b; }
+        html.dark .quiz-option.correct { border-color: #22c55e; background: #052e16; }
+        html.dark .quiz-option.wrong { border-color: #ef4444; background: #450a0a; }
+        html.dark .mindmap-wrap { border-color: #334155; background: radial-gradient(circle at top, rgba(99,102,241,.14), transparent 45%); }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800 h-screen flex overflow-hidden font-sans">
@@ -174,6 +188,12 @@
             </button>
             <button onclick="switchTab('quiz')" class="nav-btn w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100" data-tab="quiz">
                 <i class="fa-solid fa-clipboard-question w-5 text-center"></i> Quiz
+            </button>
+            <button onclick="switchTab('essay')" class="nav-btn w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100" data-tab="essay">
+                <i class="fa-solid fa-file-signature w-5 text-center"></i> Essay Quiz
+            </button>
+            <button onclick="switchTab('mindmap')" class="nav-btn w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100" data-tab="mindmap">
+                <i class="fa-solid fa-diagram-project w-5 text-center"></i> Mind Map Materi
             </button>
             <button onclick="switchTab('kerjakan')" class="nav-btn w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100" data-tab="kerjakan">
                 <i class="fa-solid fa-pen-to-square w-5 text-center"></i> Kerjakan Soal
@@ -255,29 +275,159 @@
         <div id="view-quiz" class="view-section flex-col h-full hidden overflow-y-auto p-4 md:p-8">
             <div class="max-w-4xl mx-auto w-full">
                 <h2 class="text-2xl font-bold mb-2">Buat Quiz</h2>
-                <p class="text-gray-600 mb-6">Drop materi kamu. AI akan membuatkan quiz interaktif lengkap dengan penilaian.</p>
-                
-                <div id="drop-quiz" class="drop-zone bg-white rounded-xl p-10 flex flex-col items-center justify-center cursor-pointer mb-4" onclick="document.getElementById('file-quiz').click()">
-                    <i class="fa-solid fa-file-circle-question text-4xl text-gray-400 mb-3"></i>
-                    <p class="text-gray-600 font-medium">Klik atau Drop file di sini (Max 25 file)</p>
-                    <input type="file" id="file-quiz" multiple class="hidden" accept="image/*,.txt,.csv" onchange="handleFiles('quiz', this.files)">
+                <p class="text-gray-600 mb-6">Drop materi kamu, tentukan jumlah soal, lalu kerjakan satu soal per layar secara interaktif.</p>
+
+                <div id="quiz-setup-card" class="bg-white rounded-xl p-5 shadow-sm border border-gray-200 mb-4">
+                    <div id="drop-quiz" class="drop-zone bg-white rounded-xl p-10 flex flex-col items-center justify-center cursor-pointer mb-4" onclick="document.getElementById('file-quiz').click()">
+                        <i class="fa-solid fa-file-circle-question text-4xl text-gray-400 mb-3"></i>
+                        <p class="text-gray-600 font-medium">Klik atau Drop file di sini (Max 25 file)</p>
+                        <p class="text-xs text-gray-400 mt-1">Mendukung Gambar & Teks</p>
+                        <input type="file" id="file-quiz" multiple class="hidden" accept="image/*,.txt,.csv" onchange="handleFiles('quiz', this.files)">
+                    </div>
+                    <div id="files-list-quiz" class="flex flex-wrap gap-2 mb-4"></div>
+
+                    <label for="quiz-count" class="text-sm font-semibold text-gray-700 block mb-2">Berapa Soal? <span class="text-red-500">*</span></label>
+                    <input id="quiz-count" type="number" min="1" max="50" inputmode="numeric" value="5" required class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary outline-none">
+
+                    <button onclick="processQuiz()" class="w-full bg-primary hover:bg-secondary text-white py-3 rounded-xl font-semibold transition-colors mt-4 shadow-sm">
+                        <i class="fa-solid fa-wand-magic-sparkles mr-2"></i> Buat Quiz
+                    </button>
                 </div>
-                
-                <div id="files-list-quiz" class="flex flex-wrap gap-2 mb-4"></div>
-                
-                <button onclick="processQuiz()" class="w-full bg-primary hover:bg-secondary text-white py-3 rounded-xl font-semibold transition-colors mb-8 shadow-sm">
-                    Buat Quiz
-                </button>
 
                 <div id="thinking-quiz" class="hidden text-center py-8">
                     <div class="mb-3"><span class="thinking-dot"></span><span class="thinking-dot"></span><span class="thinking-dot"></span></div>
                     <p class="text-gray-500 font-medium">AI sedang menyusun soal quiz...</p>
                 </div>
 
-                <div id="result-quiz" class="hidden bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-                    <div id="quiz-container" class="space-y-6 mb-6"></div>
-                    <button onclick="submitQuiz()" class="bg-primary hover:bg-secondary text-white px-6 py-2 rounded-lg font-medium transition-colors">Selesai & Cek Nilai</button>
-                    <div id="quiz-score" class="hidden mt-6 p-4 rounded-lg font-bold text-center text-xl"></div>
+                <div id="result-quiz" class="hidden">
+                    <div class="bg-white p-5 md:p-6 rounded-xl shadow-sm border border-gray-200 mb-4">
+                        <div class="flex items-center justify-between gap-4 mb-3">
+                            <div>
+                                <p class="text-sm text-gray-500">Quiz Interaktif</p>
+                                <h3 id="quiz-question-counter" class="text-lg font-bold">Soal 1 dari 5</h3>
+                            </div>
+                            <span id="quiz-score-mini" class="text-sm font-semibold text-primary">0 benar</span>
+                        </div>
+                        <div class="quiz-progress-track"><div id="quiz-progress-bar" class="quiz-progress-bar" style="width:20%"></div></div>
+                    </div>
+
+                    <div id="quiz-container"></div>
+                    <div id="quiz-controls" class="flex flex-col sm:flex-row gap-2 mt-4">
+                        <button id="quiz-next-btn" onclick="nextQuizQuestion()" class="flex-1 bg-primary hover:bg-secondary text-white px-6 py-3 rounded-xl font-semibold transition-colors">Next</button>
+                    </div>
+
+                    <div id="quiz-final" class="hidden bg-white p-6 rounded-xl shadow-sm border border-gray-200 mt-4">
+                        <div class="text-center">
+                            <div class="w-16 h-16 rounded-full bg-indigo-50 text-primary flex items-center justify-center mx-auto mb-3"><i class="fa-solid fa-trophy text-2xl"></i></div>
+                            <h3 class="text-2xl font-bold">Quiz Selesai!</h3>
+                            <p id="quiz-final-score" class="text-lg text-gray-600 mt-2"></p>
+                        </div>
+                        <button onclick="toggleQuizAnswers()" class="w-full mt-5 bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-3 rounded-xl font-semibold transition-colors"><i class="fa-solid fa-eye mr-2"></i><span id="quiz-answer-toggle-text">Tampilkan Soal & Jawaban</span></button>
+                        <div id="quiz-answer-review" class="hidden mt-4 space-y-4"></div>
+                        <button onclick="resetQuiz()" class="w-full mt-4 border border-gray-300 hover:bg-gray-50 text-gray-700 px-4 py-3 rounded-xl font-semibold transition-colors">Buat Quiz Baru</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- View: Essay Quiz -->
+        <div id="view-essay" class="view-section flex-col h-full hidden overflow-y-auto p-4 md:p-8">
+            <div class="max-w-4xl mx-auto w-full">
+                <h2 class="text-2xl font-bold mb-2">Essay Quiz</h2>
+                <p class="text-gray-600 mb-6">Gunakan maksimal 25 file sebagai bahan utama. AI akan membuat soal essay dan mengecek jawabanmu satu per satu.</p>
+
+                <div id="essay-setup-card" class="bg-white rounded-xl p-5 shadow-sm border border-gray-200 mb-4">
+                    <div id="drop-essay" class="drop-zone bg-white rounded-xl p-10 flex flex-col items-center justify-center cursor-pointer mb-4" onclick="document.getElementById('file-essay').click()">
+                        <i class="fa-solid fa-file-signature text-4xl text-gray-400 mb-3"></i>
+                        <p class="text-gray-600 font-medium">Klik atau Drop file di sini (Max 25 file)</p>
+                        <p class="text-xs text-gray-400 mt-1">Bahan utama untuk pembuatan soal</p>
+                        <input type="file" id="file-essay" multiple class="hidden" accept="image/*,.txt,.csv" onchange="handleFiles('essay', this.files)">
+                    </div>
+                    <div id="files-list-essay" class="flex flex-wrap gap-2 mb-4"></div>
+
+                    <label for="essay-count" class="text-sm font-semibold text-gray-700 block mb-2">Berapa Soal? <span class="text-red-500">*</span></label>
+                    <input id="essay-count" type="number" min="1" max="30" inputmode="numeric" value="5" required class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary outline-none">
+
+                    <button onclick="processEssayQuiz()" class="w-full bg-primary hover:bg-secondary text-white py-3 rounded-xl font-semibold transition-colors mt-4 shadow-sm">
+                        <i class="fa-solid fa-wand-magic-sparkles mr-2"></i> Buat Essay Quiz
+                    </button>
+                </div>
+
+                <div id="thinking-essay" class="hidden text-center py-8">
+                    <div class="mb-3"><span class="thinking-dot"></span><span class="thinking-dot"></span><span class="thinking-dot"></span></div>
+                    <p id="thinking-essay-text" class="text-gray-500 font-medium">AI sedang menyusun soal essay...</p>
+                </div>
+
+                <div id="result-essay" class="hidden">
+                    <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200 mb-4">
+                        <div class="flex items-center justify-between gap-4 mb-3">
+                            <div>
+                                <p class="text-sm text-gray-500">Essay Interaktif</p>
+                                <h3 id="essay-question-counter" class="text-lg font-bold">Soal 1 dari 5</h3>
+                            </div>
+                            <span id="essay-score-mini" class="text-sm font-semibold text-primary">0 / 0</span>
+                        </div>
+                        <div class="quiz-progress-track"><div id="essay-progress-bar" class="quiz-progress-bar" style="width:20%"></div></div>
+                    </div>
+
+                    <div id="essay-container"></div>
+                    <div id="essay-feedback" class="hidden bg-white p-5 rounded-xl border border-gray-200 mt-4"></div>
+                    <button id="essay-submit-btn" onclick="submitEssayAnswer()" class="w-full mt-4 bg-primary hover:bg-secondary text-white px-6 py-3 rounded-xl font-semibold transition-colors">Cek Jawaban dengan AI</button>
+                    <button id="essay-next-btn" onclick="nextEssayQuestion()" class="hidden w-full mt-2 bg-gray-900 hover:bg-black text-white px-6 py-3 rounded-xl font-semibold transition-colors">Next</button>
+
+                    <div id="essay-final" class="hidden bg-white p-6 rounded-xl shadow-sm border border-gray-200 mt-4">
+                        <div class="text-center">
+                            <div class="w-16 h-16 rounded-full bg-indigo-50 text-primary flex items-center justify-center mx-auto mb-3"><i class="fa-solid fa-award text-2xl"></i></div>
+                            <h3 class="text-2xl font-bold">Essay Quiz Selesai!</h3>
+                            <p id="essay-final-score" class="text-lg text-gray-600 mt-2"></p>
+                        </div>
+                        <button onclick="toggleEssayReview()" class="w-full mt-5 bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-3 rounded-xl font-semibold transition-colors"><i class="fa-solid fa-eye mr-2"></i><span id="essay-review-toggle-text">Tampilkan Soal, Jawaban & Penilaian</span></button>
+                        <div id="essay-review" class="hidden mt-4 space-y-4"></div>
+                        <button onclick="resetEssayQuiz()" class="w-full mt-4 border border-gray-300 hover:bg-gray-50 text-gray-700 px-4 py-3 rounded-xl font-semibold transition-colors">Buat Essay Quiz Baru</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- View: Mind Map Materi -->
+        <div id="view-mindmap" class="view-section flex-col h-full hidden overflow-y-auto p-4 md:p-8">
+            <div class="max-w-6xl mx-auto w-full">
+                <h2 class="text-2xl font-bold mb-2">Mind Map Materi</h2>
+                <p class="text-gray-600 mb-6">Drop maksimal 25 file. AI akan menyusun materi menjadi mind map interaktif yang bisa diperluas, diciutkan, dan di-download sebagai PNG.</p>
+
+                <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-200 mb-4">
+                    <div id="drop-mindmap" class="drop-zone bg-white rounded-xl p-10 flex flex-col items-center justify-center cursor-pointer mb-4" onclick="document.getElementById('file-mindmap').click()">
+                        <i class="fa-solid fa-diagram-project text-4xl text-gray-400 mb-3"></i>
+                        <p class="text-gray-600 font-medium">Klik atau Drop file di sini (Max 25 file)</p>
+                        <p class="text-xs text-gray-400 mt-1">Gambar & teks akan dijadikan bahan utama</p>
+                        <input type="file" id="file-mindmap" multiple class="hidden" accept="image/*,.txt,.csv" onchange="handleFiles('mindmap', this.files)">
+                    </div>
+                    <div id="files-list-mindmap" class="flex flex-wrap gap-2 mb-4"></div>
+                    <button onclick="processMindMap()" class="w-full bg-primary hover:bg-secondary text-white py-3 rounded-xl font-semibold transition-colors shadow-sm">
+                        <i class="fa-solid fa-wand-magic-sparkles mr-2"></i> Buat Mind Map
+                    </button>
+                </div>
+
+                <div id="thinking-mindmap" class="hidden text-center py-8">
+                    <div class="mb-3"><span class="thinking-dot"></span><span class="thinking-dot"></span><span class="thinking-dot"></span></div>
+                    <p class="text-gray-500 font-medium">AI sedang menyusun struktur mind map...</p>
+                </div>
+
+                <div id="result-mindmap" class="hidden">
+                    <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm mb-4">
+                        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                            <div>
+                                <h3 id="mindmap-title" class="text-xl font-bold">Mind Map Materi</h3>
+                                <p class="text-sm text-gray-500">Klik node untuk membuka/menutup cabang.</p>
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                <button onclick="expandAllMindMap()" class="px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-800 text-sm font-semibold">Buka Semua</button>
+                                <button onclick="collapseAllMindMap()" class="px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-800 text-sm font-semibold">Tutup Semua</button>
+                                <button onclick="downloadMindMapPNG()" class="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white text-sm font-semibold"><i class="fa-solid fa-download mr-1"></i> Download PNG</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="mindmap-container" class="mindmap-wrap p-2 md:p-4"></div>
                 </div>
             </div>
         </div>
@@ -434,13 +584,25 @@
             files: {
                 rangkum: [],
                 quiz: [],
+                essay: [],
+                mindmap: [],
                 kerjakan: []
             },
             quizData: [],
-            youtubeVideoId: ''
+            quizCurrentIndex: 0,
+            quizChoices: [],
+            quizResults: [],
+            quizFinished: false,
+            essayData: [],
+            essayCurrentIndex: 0,
+            essayResults: [],
+            essaySubmitted: false,
+            youtubeVideoId: '',
+            mindMapData: null,
+            mindMapCollapsed: {}
         };
 
-        const limits = { rangkum: 25, quiz: 25, kerjakan: 10 };
+        const limits = { rangkum: 25, quiz: 25, essay: 25, mindmap: 25, kerjakan: 10 };
 
         document.addEventListener('DOMContentLoaded', () => {
             loadTheme();
@@ -519,7 +681,7 @@
                 }
             });
 
-            const titles = { chat: 'Chat AI', rangkum: 'Rangkum Materi', quiz: 'Quiz', kerjakan: 'Kerjakan Soal', youtube: 'Catatan YouTube', settings: 'Settings' };
+            const titles = { chat: 'Chat AI', rangkum: 'Rangkum Materi', quiz: 'Quiz', essay: 'Essay Quiz', mindmap: 'Mind Map Materi', kerjakan: 'Kerjakan Soal', youtube: 'Catatan YouTube', settings: 'Settings' };
             document.getElementById('mobile-title').innerText = titles[tabId] || 'belajarpakeai';
             if(window.innerWidth < 768 && !initial) {
                 const sidebar = document.getElementById('sidebar');
@@ -741,7 +903,7 @@
         }
 
         function setupDragAndDrop() {
-            ['rangkum', 'quiz', 'kerjakan'].forEach(type => {
+            ['rangkum', 'quiz', 'essay', 'mindmap', 'kerjakan'].forEach(type => {
                 const dropZone = document.getElementById(`drop-${type}`);
                 if(!dropZone) return;
                 dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
@@ -946,83 +1108,503 @@
             document.getElementById('materi-modal').classList.add('hidden');
         }
 
+        function getRequiredQuestionCount(inputId, maxValue) {
+            const el = document.getElementById(inputId);
+            const value = Number.parseInt(el.value, 10);
+            if(!Number.isInteger(value) || value < 1 || value > maxValue) {
+                el.focus();
+                throw new Error(`Jumlah soal harus diisi antara 1 dan ${maxValue}.`);
+            }
+            return value;
+        }
+
+        function parseJSONArrayResponse(response) {
+            let text = String(response || '').trim();
+            text = text.replace(/^```(?:json)?/i, '').replace(/```$/i, '').trim();
+            const startIndex = text.indexOf('[');
+            const endIndex = text.lastIndexOf(']') + 1;
+            if(startIndex < 0 || endIndex <= startIndex) throw new Error('Respons AI bukan JSON array yang valid.');
+            const data = JSON.parse(text.slice(startIndex, endIndex));
+            if(!Array.isArray(data)) throw new Error('Data AI bukan array.');
+            return data;
+        }
+
         async function processQuiz() {
-            if(appState.files.quiz.length === 0) return alert("Harap upload materi untuk dijadikan kuis!");
-            document.getElementById('thinking-quiz').classList.remove('hidden');
-            document.getElementById('result-quiz').classList.add('hidden');
-            let promptContent = [
-                { type: "text", text: `Buatkan 5 soal pilihan ganda berdasarkan materi ini.\nPENTING: Output HARUS berupa JSON array murni tanpa text pendahuluan dan tanpa block markdown (JSON tanpa code fence).\nFormat:\n[\n  { "soal": "Pertanyaan?", "opsi": ["A. pilihan1", "B. pilihan2", "C. pilihan3", "D. pilihan4"], "jawaban": 0 },\n  ...\n]\n(jawaban adalah index array dari 0-3)` }
-            ].concat(buildFileContent('quiz'));
             try {
-                let response = await callAI([{ role: 'user', content: promptContent }]);
-                response = response.replace(/```json/g, '').replace(/```/g, '').trim();
-                const startIndex = response.indexOf('[');
-                const endIndex = response.lastIndexOf(']') + 1;
-                if(startIndex < 0 || endIndex <= startIndex) throw new Error('Respons AI bukan JSON array yang valid.');
-                appState.quizData = JSON.parse(response.slice(startIndex, endIndex));
-                if(!Array.isArray(appState.quizData) || !appState.quizData.length) throw new Error('Data quiz kosong atau tidak valid.');
-                renderQuiz();
+                if(appState.files.quiz.length === 0) throw new Error('Harap upload materi untuk dijadikan kuis!');
+                const count = getRequiredQuestionCount('quiz-count', 50);
+                document.getElementById('thinking-quiz').classList.remove('hidden');
+                document.getElementById('quiz-setup-card').classList.add('hidden');
+                document.getElementById('result-quiz').classList.add('hidden');
+
+                const promptContent = [
+                    { type: 'text', text: `Buat tepat ${count} soal pilihan ganda berdasarkan bahan materi yang dilampirkan.
+PENTING: Output HARUS berupa JSON array murni tanpa markdown/code fence. Jangan menambahkan teks lain.
+Setiap item harus memiliki format:
+{
+  "soal": "Pertanyaan?",
+  "opsi": ["A. pilihan1", "B. pilihan2", "C. pilihan3", "D. pilihan4"],
+  "jawaban": 0,
+  "pembahasan": "Penjelasan singkat mengapa jawaban benar."
+}
+Jawaban adalah index 0-3. Pastikan jumlah item tepat ${count}. Soal harus jelas, tidak duplikat, dan hanya memakai isi materi sebagai sumber utama.` }
+                ].concat(buildFileContent('quiz'));
+
+                const response = await callAI([{ role: 'user', content: promptContent }]);
+                const data = parseJSONArrayResponse(response);
+                if(data.length < count) throw new Error(`AI hanya membuat ${data.length} soal dari ${count} yang diminta.`);
+                appState.quizData = data.slice(0, count).map(q => ({
+                    soal: String(q.soal || ''),
+                    opsi: Array.isArray(q.opsi) ? q.opsi.slice(0,4).map(String) : [],
+                    jawaban: Number.isInteger(Number(q.jawaban)) ? Number(q.jawaban) : 0,
+                    pembahasan: String(q.pembahasan || '')
+                })).filter(q => q.soal && q.opsi.length === 4);
+                if(appState.quizData.length !== count) throw new Error('Ada format soal dari AI yang tidak lengkap. Coba lagi.');
+
+                appState.quizCurrentIndex = 0;
+                appState.quizChoices = new Array(count).fill(null);
+                appState.quizResults = new Array(count).fill(null);
+                appState.quizFinished = false;
+                renderInteractiveQuiz();
                 document.getElementById('thinking-quiz').classList.add('hidden');
                 document.getElementById('result-quiz').classList.remove('hidden');
             } catch(e) {
                 document.getElementById('thinking-quiz').classList.add('hidden');
-                alert("Gagal membuat kuis. Detail: " + e.message);
+                document.getElementById('quiz-setup-card').classList.remove('hidden');
+                alert('Gagal membuat kuis. Detail: ' + e.message);
             }
         }
 
-        function renderQuiz() {
-            const container = document.getElementById('quiz-container');
-            container.innerHTML = '';
-            document.getElementById('quiz-score').classList.add('hidden');
-            appState.quizData.forEach((q, qIndex) => {
-                let optionsHTML = '';
-                (q.opsi || []).forEach((opt, oIndex) => {
-                    optionsHTML += `
-                        <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50 mb-2 transition-colors option-lbl-${qIndex}">
-                            <input type="radio" name="q${qIndex}" value="${oIndex}" class="w-4 h-4 text-primary mr-3">
-                            <span class="text-sm">${escapeHTML(opt)}</span>
-                        </label>
-                    `;
-                });
-                container.innerHTML += `
-                    <div class="mb-6">
-                        <p class="font-bold text-gray-800 mb-3">${qIndex + 1}. ${escapeHTML(q.soal || '')}</p>
-                        <div class="space-y-1">${optionsHTML}</div>
-                    </div>
-                `;
-            });
-        }
-
-        function submitQuiz() {
-            let score = 0;
-            appState.quizData.forEach((q, qIndex) => {
-                const selected = document.querySelector(`input[name="q${qIndex}"]:checked`);
-                const labels = document.querySelectorAll(`.option-lbl-${qIndex}`);
-                labels.forEach(l => l.classList.remove('bg-green-100', 'border-green-400', 'bg-red-100', 'border-red-400'));
-                if(selected) {
-                    const ans = parseInt(selected.value, 10);
-                    if(ans === q.jawaban) {
-                        score++;
-                        selected.parentElement.classList.add('bg-green-100', 'border-green-400');
-                    } else {
-                        selected.parentElement.classList.add('bg-red-100', 'border-red-400');
-                        if(labels[q.jawaban]) labels[q.jawaban].classList.add('bg-green-50', 'border-green-400', 'text-green-700'); 
-                    }
-                } else if(labels[q.jawaban]) {
-                    labels[q.jawaban].classList.add('bg-green-50', 'border-green-400', 'text-green-700');
-                }
-            });
-            const scoreDiv = document.getElementById('quiz-score');
+        function renderInteractiveQuiz() {
+            const q = appState.quizData[appState.quizCurrentIndex];
+            if(!q) return;
             const total = appState.quizData.length;
-            const percentage = total ? (score / total) * 100 : 0;
-            scoreDiv.classList.remove('hidden', 'bg-green-100', 'text-green-700', 'bg-red-100', 'text-red-700');
-            if(percentage >= 70) {
-                scoreDiv.classList.add('bg-green-100', 'text-green-700');
-                scoreDiv.innerText = `Luar Biasa! Nilai Kamu: ${score}/${total} (${percentage.toFixed(0)}%)`;
+            const index = appState.quizCurrentIndex;
+            const selected = appState.quizChoices[index];
+            const container = document.getElementById('quiz-container');
+            const percent = ((index + 1) / total) * 100;
+            document.getElementById('quiz-question-counter').textContent = `Soal ${index + 1} dari ${total}`;
+            document.getElementById('quiz-progress-bar').style.width = `${percent}%`;
+            document.getElementById('quiz-score-mini').textContent = `${appState.quizResults.filter(v => v === true).length} benar`;
+
+            let options = '';
+            q.opsi.forEach((opt, oIndex) => {
+                const isSelected = selected === oIndex;
+                options += `<button type="button" onclick="selectQuizOption(${oIndex})" class="quiz-option w-full text-left p-4 border rounded-xl mb-3 ${isSelected ? 'selected' : ''}">
+                    <div class="flex items-start gap-3">
+                        <span class="w-7 h-7 rounded-full border flex items-center justify-center shrink-0 text-xs font-bold">${String.fromCharCode(65 + oIndex)}</span>
+                        <span class="font-medium">${escapeHTML(opt.replace(/^([A-D])\.\s*/i, ''))}</span>
+                    </div>
+                </button>`;
+            });
+
+            container.innerHTML = `<div class="bg-white p-5 md:p-7 rounded-xl shadow-sm border border-gray-200">
+                <div class="text-sm text-primary font-semibold mb-3">Pertanyaan</div>
+                <h3 class="text-xl md:text-2xl font-bold leading-relaxed mb-6">${escapeHTML(q.soal)}</h3>
+                ${options}
+                <p class="text-xs text-gray-500 mt-2">Pilih satu jawaban, lalu tekan Next.</p>
+            </div>`;
+
+            const nextBtn = document.getElementById('quiz-next-btn');
+            nextBtn.disabled = selected === null;
+            nextBtn.classList.toggle('opacity-50', selected === null);
+            nextBtn.textContent = index === total - 1 ? 'Selesai & Lihat Nilai' : 'Next';
+        }
+
+        function selectQuizOption(optionIndex) {
+            if(appState.quizFinished) return;
+            appState.quizChoices[appState.quizCurrentIndex] = optionIndex;
+            renderInteractiveQuiz();
+        }
+
+        function nextQuizQuestion() {
+            const currentAnswer = appState.quizChoices[appState.quizCurrentIndex];
+            if(currentAnswer === null || typeof currentAnswer !== 'number') return;
+            const q = appState.quizData[appState.quizCurrentIndex];
+            appState.quizResults[appState.quizCurrentIndex] = currentAnswer === q.jawaban;
+            if(appState.quizCurrentIndex < appState.quizData.length - 1) {
+                appState.quizCurrentIndex += 1;
+                renderInteractiveQuiz();
             } else {
-                scoreDiv.classList.add('bg-red-100', 'text-red-700');
-                scoreDiv.innerText = `Terus Belajar! Nilai Kamu: ${score}/${total} (${percentage.toFixed(0)}%)`;
+                finishQuiz();
             }
+        }
+
+        function finishQuiz() {
+            appState.quizFinished = true;
+            const correct = appState.quizResults.filter(v => v === true).length;
+            const total = appState.quizData.length;
+            const pct = total ? Math.round(correct / total * 100) : 0;
+            document.getElementById('quiz-container').classList.add('hidden');
+            document.getElementById('quiz-controls').classList.add('hidden');
+            document.getElementById('quiz-final').classList.remove('hidden');
+            document.getElementById('quiz-final-score').textContent = `Nilai kamu: ${correct}/${total} (${pct}%)`;
+            document.getElementById('quiz-score-mini').textContent = `${correct} benar`;
+            buildQuizReview();
+        }
+
+        function buildQuizReview() {
+            const review = document.getElementById('quiz-answer-review');
+            review.innerHTML = appState.quizData.map((q, i) => {
+                const chosen = appState.quizAnswers[i];
+                const correct = chosen === true;
+                return `<div class="border border-gray-200 rounded-xl p-4">
+                    <div class="font-bold mb-2">${i + 1}. ${escapeHTML(q.soal)}</div>
+                    <div class="text-sm mb-1 ${correct ? 'text-green-700' : 'text-red-700'}">Jawaban kamu: ${correct ? escapeHTML(q.opsi[q.jawaban]) : 'Salah'}</div>
+                    ${!correct ? `<div class="text-sm text-green-700 mb-1">Jawaban benar: ${escapeHTML(q.opsi[q.jawaban] || '')}</div>` : ''}
+                    ${q.pembahasan ? `<div class="text-sm text-gray-600 mt-2">${marked.parse(q.pembahasan)}</div>` : ''}
+                </div>`;
+            }).join('');
+        }
+
+        function toggleQuizAnswers() {
+            const review = document.getElementById('quiz-answer-review');
+            const text = document.getElementById('quiz-answer-toggle-text');
+            const hidden = review.classList.toggle('hidden');
+            text.textContent = hidden ? 'Tampilkan Soal & Jawaban' : 'Sembunyikan Soal & Jawaban';
+        }
+
+        function resetQuiz() {
+            appState.quizData = [];
+            appState.quizChoices = [];
+            appState.quizResults = [];
+            appState.quizCurrentIndex = 0;
+            appState.quizFinished = false;
+            document.getElementById('quiz-final').classList.add('hidden');
+            document.getElementById('quiz-container').classList.remove('hidden');
+            document.getElementById('quiz-controls').classList.remove('hidden');
+            document.getElementById('quiz-setup-card').classList.remove('hidden');
+            document.getElementById('quiz-answer-review').classList.add('hidden');
+            document.getElementById('quiz-answer-toggle-text').textContent = 'Tampilkan Soal & Jawaban';
+        }
+
+        async function processEssayQuiz() {
+            try {
+                if(appState.files.essay.length === 0) throw new Error('Harap upload bahan utama untuk Essay Quiz!');
+                const count = getRequiredQuestionCount('essay-count', 30);
+                document.getElementById('thinking-essay').classList.remove('hidden');
+                document.getElementById('thinking-essay-text').textContent = 'AI sedang menyusun soal essay...';
+                document.getElementById('essay-setup-card').classList.add('hidden');
+                document.getElementById('result-essay').classList.add('hidden');
+
+                const promptContent = [
+                    { type: 'text', text: `Buat tepat ${count} soal essay berdasarkan bahan utama yang dilampirkan. Output WAJIB JSON array murni tanpa markdown. Format setiap item: {"soal":"Pertanyaan essay","jawaban_acuan":"Poin jawaban yang seharusnya ada","rubrik":"Kriteria penilaian"}. Pastikan soal tidak duplikat dan dapat dijawab berdasarkan materi.` }
+                ].concat(buildFileContent('essay'));
+
+                const response = await callAI([{ role: 'user', content: promptContent }]);
+                const data = parseJSONArrayResponse(response);
+                if(data.length < count) throw new Error(`AI hanya membuat ${data.length} soal dari ${count} yang diminta.`);
+                appState.essayData = data.slice(0, count).map(q => ({
+                    soal: String(q.soal || ''),
+                    jawaban_acuan: String(q.jawaban_acuan || ''),
+                    rubrik: String(q.rubrik || '')
+                })).filter(q => q.soal);
+                if(appState.essayData.length !== count) throw new Error('Ada format soal essay dari AI yang tidak lengkap. Coba lagi.');
+                appState.essayCurrentIndex = 0;
+                appState.essayResults = new Array(count).fill(null);
+                appState.essaySubmitted = false;
+                renderEssayQuestion();
+                document.getElementById('thinking-essay').classList.add('hidden');
+                document.getElementById('result-essay').classList.remove('hidden');
+            } catch(e) {
+                document.getElementById('thinking-essay').classList.add('hidden');
+                document.getElementById('essay-setup-card').classList.remove('hidden');
+                alert('Gagal membuat Essay Quiz. Detail: ' + e.message);
+            }
+        }
+
+        function renderEssayQuestion() {
+            const q = appState.essayData[appState.essayCurrentIndex];
+            if(!q) return;
+            const total = appState.essayData.length;
+            const index = appState.essayCurrentIndex;
+            document.getElementById('essay-question-counter').textContent = `Soal ${index + 1} dari ${total}`;
+            document.getElementById('essay-progress-bar').style.width = `${((index + 1) / total) * 100}%`;
+            const graded = appState.essayResults.filter(Boolean);
+            const points = graded.reduce((sum, r) => sum + Number(r.score || 0), 0);
+            document.getElementById('essay-score-mini').textContent = `${points} / ${graded.length * 100 || 0}`;
+
+            document.getElementById('essay-container').innerHTML = `<div class="bg-white p-5 md:p-7 rounded-xl shadow-sm border border-gray-200">
+                <div class="text-sm text-primary font-semibold mb-3">Pertanyaan Essay</div>
+                <h3 class="text-xl md:text-2xl font-bold leading-relaxed mb-5">${escapeHTML(q.soal)}</h3>
+                <textarea id="essay-answer-input" rows="7" class="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary outline-none resize-y" placeholder="Tulis jawabanmu di sini..."></textarea>
+            </div>`;
+            document.getElementById('essay-feedback').classList.add('hidden');
+            document.getElementById('essay-feedback').innerHTML = '';
+            const submitBtn = document.getElementById('essay-submit-btn');
+            const nextBtn = document.getElementById('essay-next-btn');
+            submitBtn.classList.remove('hidden');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Cek Jawaban dengan AI';
+            nextBtn.classList.add('hidden');
+            appState.essaySubmitted = false;
+        }
+
+        async function submitEssayAnswer() {
+            const q = appState.essayData[appState.essayCurrentIndex];
+            const input = document.getElementById('essay-answer-input');
+            const answer = input.value.trim();
+            if(!answer) { input.focus(); return alert('Jawaban wajib diisi terlebih dahulu.'); }
+
+            const submitBtn = document.getElementById('essay-submit-btn');
+            const nextBtn = document.getElementById('essay-next-btn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> AI sedang mengecek...';
+            document.getElementById('thinking-essay').classList.remove('hidden');
+            document.getElementById('thinking-essay-text').textContent = 'AI sedang menilai jawabanmu...';
+
+            const prompt = `Kamu adalah guru yang objektif. Nilai jawaban siswa terhadap soal essay berikut berdasarkan materi, jawaban acuan, dan rubrik. Beri skor 0-100. Jangan menuntut kata-kata persis; nilai berdasarkan ketepatan konsep, kelengkapan, dan relevansi. Output WAJIB JSON object murni tanpa markdown dengan format: {"score":85,"status":"Benar/Sebagian Benar/Perlu Diperbaiki","feedback":"Penjelasan singkat dan spesifik","jawaban_ideal":"Jawaban ideal singkat"}.
+
+SOAL:
+${q.soal}
+
+JAWABAN ACUAN:
+${q.jawaban_acuan}
+
+RUBRIK:
+${q.rubrik}
+
+JAWABAN SISWA:
+${answer}`;
+
+            try {
+                const response = await callAI([{ role: 'user', content: prompt }]);
+                let text = String(response || '').trim().replace(/^```(?:json)?/i, '').replace(/```$/i, '').trim();
+                const start = text.indexOf('{');
+                const end = text.lastIndexOf('}') + 1;
+                if(start < 0 || end <= start) throw new Error('Respons penilaian AI bukan JSON object yang valid.');
+                const result = JSON.parse(text.slice(start, end));
+                const score = Math.max(0, Math.min(100, Number(result.score) || 0));
+                appState.essayResults[appState.essayCurrentIndex] = {
+                    answer,
+                    score,
+                    status: String(result.status || ''),
+                    feedback: String(result.feedback || ''),
+                    jawaban_ideal: String(result.jawaban_ideal || q.jawaban_acuan)
+                };
+                appState.essaySubmitted = true;
+                document.getElementById('essay-feedback').innerHTML = `<div class="flex items-start justify-between gap-4 mb-3"><div><p class="text-sm text-gray-500">Hasil penilaian AI</p><h4 class="text-xl font-bold">${escapeHTML(result.status || 'Dinilai')}</h4></div><div class="text-3xl font-black text-primary">${score}</div></div><div class="prose prose-sm max-w-none"><p><strong>Feedback:</strong> ${escapeHTML(result.feedback || '')}</p><p><strong>Jawaban ideal:</strong> ${escapeHTML(result.jawaban_ideal || q.jawaban_acuan)}</p></div>`;
+                document.getElementById('essay-feedback').classList.remove('hidden');
+                submitBtn.classList.add('hidden');
+                nextBtn.classList.remove('hidden');
+                nextBtn.textContent = appState.essayCurrentIndex === appState.essayData.length - 1 ? 'Lihat Nilai Akhir' : 'Next';
+                const points = appState.essayResults.filter(Boolean).reduce((sum, r) => sum + Number(r.score || 0), 0);
+                const graded = appState.essayResults.filter(Boolean).length;
+                document.getElementById('essay-score-mini').textContent = `${points} / ${graded * 100}`;
+            } catch(e) {
+                alert('Gagal mengecek jawaban dengan AI. Detail: ' + e.message);
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Cek Jawaban dengan AI';
+            } finally {
+                document.getElementById('thinking-essay').classList.add('hidden');
+            }
+        }
+
+        function nextEssayQuestion() {
+            if(!appState.essaySubmitted) return;
+            if(appState.essayCurrentIndex < appState.essayData.length - 1) {
+                appState.essayCurrentIndex += 1;
+                renderEssayQuestion();
+            } else {
+                finishEssayQuiz();
+            }
+        }
+
+        function finishEssayQuiz() {
+            const results = appState.essayResults.filter(Boolean);
+            const total = appState.essayData.length;
+            const average = total ? Math.round(results.reduce((sum, r) => sum + Number(r.score || 0), 0) / total) : 0;
+            document.getElementById('essay-container').classList.add('hidden');
+            document.getElementById('essay-feedback').classList.add('hidden');
+            document.getElementById('essay-submit-btn').classList.add('hidden');
+            document.getElementById('essay-next-btn').classList.add('hidden');
+            document.getElementById('essay-final').classList.remove('hidden');
+            document.getElementById('essay-final-score').textContent = `Nilai rata-rata: ${average}/100 (${results.length}/${total} soal dinilai)`;
+            buildEssayReview();
+        }
+
+        function buildEssayReview() {
+            const review = document.getElementById('essay-review');
+            review.innerHTML = appState.essayData.map((q, i) => {
+                const r = appState.essayResults[i];
+                return `<div class="border border-gray-200 rounded-xl p-4"><div class="font-bold mb-2">${i + 1}. ${escapeHTML(q.soal)}</div><div class="text-sm text-gray-600 mb-2"><strong>Jawaban kamu:</strong> ${escapeHTML(r?.answer || '-')}</div><div class="text-sm font-semibold text-primary mb-1">Skor: ${r?.score ?? 0}/100</div><div class="text-sm text-gray-600"><strong>Feedback:</strong> ${escapeHTML(r?.feedback || '-')}</div><div class="text-sm text-gray-600 mt-2"><strong>Jawaban ideal:</strong> ${escapeHTML(r?.jawaban_ideal || q.jawaban_acuan)}</div></div>`;
+            }).join('');
+        }
+
+        function toggleEssayReview() {
+            const review = document.getElementById('essay-review');
+            const text = document.getElementById('essay-review-toggle-text');
+            const hidden = review.classList.toggle('hidden');
+            text.textContent = hidden ? 'Tampilkan Soal, Jawaban & Penilaian' : 'Sembunyikan Soal, Jawaban & Penilaian';
+        }
+
+        function resetEssayQuiz() {
+            appState.essayData = [];
+            appState.essayResults = [];
+            appState.essayCurrentIndex = 0;
+            appState.essaySubmitted = false;
+            document.getElementById('essay-final').classList.add('hidden');
+            document.getElementById('essay-container').classList.remove('hidden');
+            document.getElementById('essay-feedback').classList.remove('hidden');
+            document.getElementById('essay-submit-btn').classList.remove('hidden');
+            document.getElementById('essay-next-btn').classList.add('hidden');
+            document.getElementById('essay-setup-card').classList.remove('hidden');
+            document.getElementById('essay-review').classList.add('hidden');
+            document.getElementById('essay-review-toggle-text').textContent = 'Tampilkan Soal, Jawaban & Penilaian';
+            document.getElementById('essay-feedback').classList.add('hidden');
+        }
+
+        async function processMindMap() {
+            try {
+                if(appState.files.mindmap.length === 0) throw new Error('Harap upload materi terlebih dahulu!');
+                document.getElementById('thinking-mindmap').classList.remove('hidden');
+                document.getElementById('result-mindmap').classList.add('hidden');
+                const promptContent = [
+                    { type: 'text', text: `Buat struktur mind map berdasarkan seluruh materi yang dilampirkan. Output WAJIB JSON object murni tanpa markdown dengan format:
+{"title":"Judul Materi","root":{"label":"Topik Utama","description":"Ringkasan singkat","children":[{"label":"Subtopik","description":"Penjelasan singkat","children":[...]}]}}
+Buat struktur ringkas namun mencakup konsep penting. Maksimal 5 anak per node dan kedalaman maksimal 4 tingkat. Jangan memasukkan fakta yang tidak didukung materi.` }
+                ].concat(buildFileContent('mindmap'));
+                const response = await callAI([{ role: 'user', content: promptContent }]);
+                let text = String(response || '').trim().replace(/^```(?:json)?/i, '').replace(/```$/i, '').trim();
+                const start = text.indexOf('{');
+                const end = text.lastIndexOf('}') + 1;
+                if(start < 0 || end <= start) throw new Error('Respons mind map bukan JSON object yang valid.');
+                const data = JSON.parse(text.slice(start, end));
+                if(!data.root || !data.root.label) throw new Error('Struktur mind map dari AI tidak lengkap.');
+                appState.mindMapData = data;
+                appState.mindMapCollapsed = {};
+                renderMindMap();
+                document.getElementById('thinking-mindmap').classList.add('hidden');
+                document.getElementById('result-mindmap').classList.remove('hidden');
+            } catch(e) {
+                document.getElementById('thinking-mindmap').classList.add('hidden');
+                alert('Gagal membuat mind map. Detail: ' + e.message);
+            }
+        }
+
+        function sanitizeMindMapNode(node, depth = 0, path = '0') {
+            if(depth > 4 || !node || typeof node !== 'object') return null;
+            const children = Array.isArray(node.children) ? node.children.slice(0,5).map((c,i) => sanitizeMindMapNode(c, depth + 1, `${path}-${i}`)).filter(Boolean) : [];
+            return { label: String(node.label || 'Tanpa Judul').slice(0,120), description: String(node.description || '').slice(0,280), children, path };
+        }
+
+        function calculateMindMapLayout(root) {
+            const nodeW = 210, nodeH = 74, hGap = 54, vGap = 28;
+            const visible = [];
+            function walk(node, depth, yStart) {
+                const hasKids = node.children.length && !appState.mindMapCollapsed[node.path];
+                if(!hasKids) {
+                    const y = yStart; visible.push({ node, depth, x: 24 + depth * (nodeW + hGap), y });
+                    return y + nodeH + vGap;
+                }
+                let cur = yStart;
+                const childYs = [];
+                for(const child of node.children) {
+                    const before = visible.length;
+                    const next = walk(child, depth + 1, cur);
+                    cur = next;
+                    const childVisible = visible.slice(before);
+                    const own = childVisible[0];
+                    const last = childVisible[childVisible.length - 1];
+                    if(own && last) childYs.push((own.y + last.y + nodeH) / 2);
+                }
+                const y = childYs.length ? childYs[0] + (childYs[childYs.length - 1] - childYs[0]) / 2 - nodeH/2 : cur;
+                visible.push({ node, depth, x: 24 + depth * (nodeW + hGap), y });
+                return Math.max(cur, y + nodeH + vGap);
+            }
+            const maxY = walk(root, 0, 20);
+            return { visible: visible.sort((a,b) => a.y-b.y || a.depth-b.depth), width: Math.max(520, 24 + (Math.max(...visible.map(n => n.depth), 0)+1) * (nodeW+hGap)), height: Math.max(260, maxY+20), nodeW, nodeH };
+        }
+
+        function renderMindMap() {
+            const root = sanitizeMindMapNode(appState.mindMapData.root, 0, '0');
+            if(!root) return;
+            const layout = calculateMindMapLayout(root);
+            document.getElementById('mindmap-title').textContent = appState.mindMapData.title || root.label;
+            const parents = [];
+            layout.visible.forEach(v => {
+                v.node.children.forEach(c => {
+                    if(appState.mindMapCollapsed[v.node.path]) return;
+                    const child = layout.visible.find(x => x.node.path === c.path);
+                    if(child) parents.push({ from: v, to: child });
+                });
+            });
+            const lines = parents.map(link => {
+                const x1 = link.from.x + layout.nodeW, y1 = link.from.y + layout.nodeH/2;
+                const x2 = link.to.x, y2 = link.to.y + layout.nodeH/2;
+                const mid = (x1+x2)/2;
+                return `<path d="M ${x1} ${y1} C ${mid} ${y1}, ${mid} ${y2}, ${x2} ${y2}" fill="none" stroke="#94a3b8" stroke-width="2"/>`;
+            }).join('');
+            const nodes = layout.visible.map(v => {
+                const hasChildren = v.node.children.length > 0;
+                const fill = v.depth === 0 ? '#4f46e5' : v.depth === 1 ? '#eef2ff' : '#ffffff';
+                const stroke = v.depth === 0 ? '#4f46e5' : '#cbd5e1';
+                const textColor = v.depth === 0 ? '#ffffff' : '#1f2937';
+                const toggle = hasChildren ? `<circle cx="${v.x + layout.nodeW - 18}" cy="${v.y + 18}" r="9" fill="${v.depth === 0 ? '#ffffff' : '#4f46e5'}"/><text x="${v.x + layout.nodeW - 18}" y="${v.y + 22}" text-anchor="middle" font-size="12" font-weight="800" fill="${v.depth === 0 ? '#4f46e5' : '#ffffff'}">${appState.mindMapCollapsed[v.node.path] ? '+' : '−'}</text>` : '';
+                const desc = v.node.description ? `<text x="${v.x+14}" y="${v.y+49}" font-size="11" fill="${v.depth === 0 ? '#e0e7ff' : '#64748b'}">${escapeHTML(v.node.description).slice(0,55)}${v.node.description.length>55?'…':''}</text>` : '';
+                return `<g class="mindmap-node" tabindex="0" data-path="${escapeHTML(v.node.path)}" onclick="toggleMindMapNode('${v.node.path}')"><rect x="${v.x}" y="${v.y}" rx="14" width="${layout.nodeW}" height="${layout.nodeH}" fill="${fill}" stroke="${stroke}" stroke-width="2"/><text x="${v.x+14}" y="${v.y+28}" font-size="14" font-weight="800" fill="${textColor}">${escapeHTML(v.node.label).slice(0,25)}${v.node.label.length>25?'…':''}</text>${toggle}${desc}</g>`;
+            }).join('');
+            const svg = `<svg class="mindmap-svg" xmlns="http://www.w3.org/2000/svg" width="${layout.width}" height="${layout.height}" viewBox="0 0 ${layout.width} ${layout.height}" role="img" aria-label="Mind map materi">${lines}${nodes}</svg>`;
+            document.getElementById('mindmap-container').innerHTML = svg;
+        }
+
+        function toggleMindMapNode(path) {
+            appState.mindMapCollapsed[path] = !appState.mindMapCollapsed[path];
+            renderMindMap();
+        }
+
+        function walkMindMap(node, fn) {
+            if(!node) return;
+            fn(node);
+            (node.children || []).forEach(child => walkMindMap(child, fn));
+        }
+
+        function expandAllMindMap() {
+            appState.mindMapCollapsed = {};
+            renderMindMap();
+        }
+
+        function collapseAllMindMap() {
+            const root = sanitizeMindMapNode(appState.mindMapData?.root, 0, '0');
+            appState.mindMapCollapsed = {};
+            walkMindMap(root, node => { if(node.children?.length) appState.mindMapCollapsed[node.path] = node.path === '0' ? false : true; });
+            renderMindMap();
+        }
+
+        async function downloadMindMapPNG() {
+            const svg = document.querySelector('#mindmap-container svg');
+            if(!svg) return alert('Mind map belum tersedia.');
+            const serializer = new XMLSerializer();
+            let source = serializer.serializeToString(svg);
+            if(!source.match(/^<svg[^>]+xmlns="http:\/\/www.w3.org\/2000\/svg"/)) source = source.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
+            if(!source.match(/^<svg[^>]+xmlns:xlink=/)) source = source.replace(/^<svg/, '<svg xmlns:xlink="http://www.w3.org/1999/xlink"');
+            const svgBlob = new Blob([source], { type: 'image/svg+xml;charset=utf-8' });
+            const url = URL.createObjectURL(svgBlob);
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const scale = 2;
+                canvas.width = Number(svg.getAttribute('width')) * scale;
+                canvas.height = Number(svg.getAttribute('height')) * scale;
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0,0,canvas.width,canvas.height);
+                ctx.scale(scale, scale);
+                ctx.drawImage(img, 0, 0);
+                URL.revokeObjectURL(url);
+                canvas.toBlob(blob => {
+                    if(!blob) return alert('Gagal membuat PNG.');
+                    const a = document.createElement('a');
+                    a.href = URL.createObjectURL(blob);
+                    a.download = 'MindMap_Materi.png';
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+                }, 'image/png');
+            };
+            img.onerror = () => { URL.revokeObjectURL(url); alert('Gagal menyiapkan PNG mind map.'); };
+            img.src = url;
         }
 
         async function processKerjakan() {
