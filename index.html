@@ -352,6 +352,12 @@
                     <label for="essay-count" class="text-sm font-semibold text-gray-700 block mb-2">Berapa Soal? <span class="text-red-500">*</span></label>
                     <input id="essay-count" type="number" min="1" max="30" inputmode="numeric" value="5" required class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary outline-none">
 
+                    <div class="mt-4">
+                        <label for="essay-detail" class="text-sm font-semibold text-gray-700 block mb-1">Rincian pembuatan Soal <span class="text-gray-400 font-normal">(Opsional)</span></label>
+                        <p class="text-xs text-gray-500 mb-2">Tulis seperti apa soal yang kamu inginkan. Contoh: “Buat soal seperti: Apa isi dari Non Aspirasi”. AI akan menjadikan rincian ini sebagai panduan dalam membuat soal.</p>
+                        <textarea id="essay-detail" rows="3" class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary outline-none resize-y" placeholder="Contoh: Buat soal seperti Apa isi dari Non Aspirasi"></textarea>
+                    </div>
+
                     <button onclick="processEssayQuiz()" class="w-full bg-primary hover:bg-secondary text-white py-3 rounded-xl font-semibold transition-colors mt-4 shadow-sm">
                         <i class="fa-solid fa-wand-magic-sparkles mr-2"></i> Buat Essay Quiz
                     </button>
@@ -1291,8 +1297,15 @@ Jawaban adalah index 0-3. Pastikan jumlah item tepat ${count}. Soal harus jelas,
                 document.getElementById('essay-setup-card').classList.add('hidden');
                 document.getElementById('result-essay').classList.add('hidden');
 
+                const detail = document.getElementById('essay-detail').value.trim();
+                const detailInstruction = detail
+                    ? `\n\nRINCIAN PEMBUATAN SOAL DARI PENGGUNA (WAJIB DIJADIKAN PANDUAN):\n${detail}\nBuat setiap soal mengikuti maksud, gaya, atau pola yang dijelaskan pada rincian tersebut selama tetap sesuai dengan bahan utama. Jangan mengabaikan rincian pengguna.`
+                    : '';
+
                 const promptContent = [
-                    { type: 'text', text: `Buat tepat ${count} soal essay berdasarkan bahan utama yang dilampirkan. Output WAJIB JSON array murni tanpa markdown. Format setiap item: {"soal":"Pertanyaan essay","jawaban_acuan":"Poin jawaban yang seharusnya ada","rubrik":"Kriteria penilaian"}. Pastikan soal tidak duplikat dan dapat dijawab berdasarkan materi.` }
+                    { type: 'text', text: `Buat tepat ${count} soal essay berdasarkan bahan utama yang dilampirkan.${detailInstruction}
+
+Output WAJIB JSON array murni tanpa markdown. Format setiap item: {"soal":"Pertanyaan essay","jawaban_acuan":"Poin jawaban yang seharusnya ada","rubrik":"Kriteria penilaian"}. Pastikan soal tidak duplikat, relevan dengan bahan utama, dan dapat dijawab berdasarkan materi. Jika rincian pengguna meminta pola pertanyaan tertentu, terapkan pola tersebut pada soal-soalnya.` }
                 ].concat(buildFileContent('essay'));
 
                 const response = await callAI([{ role: 'user', content: promptContent }]);
