@@ -131,6 +131,13 @@
         html.dark .quiz-option.correct { border-color: #22c55e; background: #052e16; }
         html.dark .quiz-option.wrong { border-color: #ef4444; background: #450a0a; }
         html.dark .mindmap-wrap { border-color: #334155; background: radial-gradient(circle at top, rgba(99,102,241,.14), transparent 45%); }
+
+        .usage-bar-track { height: 10px; border-radius: 999px; background: #e5e7eb; overflow: hidden; }
+        .usage-bar { height: 100%; width: 0%; border-radius: 999px; background: #4f46e5; transition: width .25s ease; }
+        html.dark .usage-bar-track { background: #334155; }
+        .app-alert-backdrop { backdrop-filter: blur(3px); }
+        .app-alert-card { animation: appAlertIn .16s ease-out; }
+        @keyframes appAlertIn { from { opacity: 0; transform: translateY(8px) scale(.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800 h-screen flex overflow-hidden font-sans">
@@ -566,6 +573,41 @@
                 </div>
 
                 <div class="mt-4 bg-white rounded-xl p-5 md:p-6 shadow-sm border border-gray-200">
+                    <div class="flex items-center justify-between gap-3 mb-4">
+                        <div>
+                            <h3 class="font-bold text-lg">Usage &amp; Limit</h3>
+                            <p class="text-sm text-gray-500 mt-1">Pantau batas request/token yang terakhir dikirim provider.</p>
+                        </div>
+                        <button onclick="refreshUsagePanel()" class="shrink-0 bg-gray-100 hover:bg-gray-200 text-gray-800 px-3 py-2 rounded-lg text-sm font-semibold transition-colors"><i class="fa-solid fa-rotate-right mr-1"></i> Refresh</button>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-gray-50 rounded-xl p-4">
+                            <div class="flex justify-between items-center gap-3 mb-2">
+                                <span class="font-semibold">Request</span>
+                                <span id="usage-request-percent" class="font-bold text-primary">—</span>
+                            </div>
+                            <div class="usage-bar-track"><div id="usage-request-bar" class="usage-bar"></div></div>
+                            <div id="usage-request-detail" class="text-xs text-gray-500 mt-2">Belum ada data limit dari provider.</div>
+                        </div>
+                        <div class="bg-gray-50 rounded-xl p-4">
+                            <div class="flex justify-between items-center gap-3 mb-2">
+                                <span class="font-semibold">Token</span>
+                                <span id="usage-token-percent" class="font-bold text-primary">—</span>
+                            </div>
+                            <div class="usage-bar-track"><div id="usage-token-bar" class="usage-bar"></div></div>
+                            <div id="usage-token-detail" class="text-xs text-gray-500 mt-2">Belum ada data limit dari provider.</div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                        <div class="bg-gray-50 rounded-xl p-4"><span class="text-gray-500 block mb-1">Reset</span><strong id="usage-reset">Belum diketahui</strong></div>
+                        <div class="bg-gray-50 rounded-xl p-4"><span class="text-gray-500 block mb-1">Status</span><strong id="usage-status">Belum ada request</strong></div>
+                    </div>
+                    <p id="usage-source-note" class="text-xs text-gray-500 mt-4">Persentase hanya ditampilkan jika provider mengirim informasi limit melalui response header/API.</p>
+                </div>
+
+                <div class="mt-4 bg-white rounded-xl p-5 md:p-6 shadow-sm border border-gray-200">
                     <h3 class="font-bold text-lg mb-2">Status</h3>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
                         <div class="bg-gray-50 rounded-lg p-3"><span class="text-gray-500 block">Provider</span><strong id="settings-provider">Gemini</strong></div>
@@ -576,6 +618,22 @@
             </div>
         </div>
     </main>
+
+    <!-- App Alert Modal -->
+    <div id="app-alert" class="fixed inset-0 bg-black bg-opacity-60 z-[100] hidden items-center justify-center p-4 app-alert-backdrop" role="dialog" aria-modal="true">
+        <div class="app-alert-card bg-white rounded-2xl w-full max-w-md shadow-2xl border border-gray-200 overflow-hidden">
+            <div class="p-5 flex items-start gap-4">
+                <div id="app-alert-icon" class="w-11 h-11 rounded-full bg-red-50 text-red-600 flex items-center justify-center shrink-0"><i class="fa-solid fa-circle-exclamation"></i></div>
+                <div class="min-w-0">
+                    <h3 id="app-alert-title" class="font-bold text-lg text-gray-800">Terjadi masalah</h3>
+                    <p id="app-alert-message" class="text-sm text-gray-600 mt-1 whitespace-pre-wrap break-words"></p>
+                </div>
+            </div>
+            <div class="px-5 py-4 border-t border-gray-200 bg-gray-50 text-right">
+                <button id="app-alert-ok" onclick="closeAppAlert()" class="bg-primary hover:bg-secondary text-white px-5 py-2.5 rounded-lg font-semibold">OK</button>
+            </div>
+        </div>
+    </div>
 
     <!-- Modal for Materi -->
     <div id="materi-modal" class="fixed inset-0 bg-black bg-opacity-60 z-50 hidden flex items-center justify-center p-4">
@@ -624,7 +682,15 @@
             essayReviewing: false,
             youtubeVideoId: '',
             mindMapData: null,
-            mindMapCollapsed: {}
+            mindMapCollapsed: {},
+            usage: {
+                provider: '', model: '', lastStatus: 'Belum ada request',
+                request: { limit: null, remaining: null, reset: null, resetAt: null },
+                token: { limit: null, remaining: null, reset: null, resetAt: null },
+                lastUsage: { input: null, output: null, total: null },
+                retryAfter: null,
+                updatedAt: null
+            }
         };
 
         const limits = { rangkum: 25, quiz: 25, essay: 25, mindmap: 25, kerjakan: 10 };
@@ -634,7 +700,10 @@
             changeProvider();
             switchTab('chat', true);
             setupDragAndDrop();
+            loadUsage();
             updateSettingsStatus();
+            refreshUsagePanel();
+            window.alert = showAppAlert;
         });
 
         function loadTheme() {
@@ -715,17 +784,201 @@
             updateSettingsStatus();
         }
 
+        function showAppAlert(message, title = 'Terjadi masalah') {
+            const modal = document.getElementById('app-alert');
+            if(!modal) return;
+            document.getElementById('app-alert-title').textContent = title;
+            document.getElementById('app-alert-message').textContent = String(message || 'Terjadi kesalahan.');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            setTimeout(() => document.getElementById('app-alert-ok')?.focus(), 0);
+        }
+
+        function closeAppAlert() {
+            const modal = document.getElementById('app-alert');
+            if(!modal) return;
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if(e.key === 'Escape') closeAppAlert();
+        });
+
+        function parseResetSeconds(value) {
+            if(value == null || value === '') return null;
+            const str = String(value).trim().toLowerCase();
+            if(/^\d+(?:\.\d+)?$/.test(str)) return Number(str);
+            let total = 0;
+            let matched = false;
+            const re = /(\d+(?:\.\d+)?)(ms|s|m|h|d)/g;
+            let match;
+            while((match = re.exec(str))) {
+                matched = true;
+                const n = Number(match[1]);
+                if(match[2] === 'ms') total += n / 1000;
+                else if(match[2] === 's') total += n;
+                else if(match[2] === 'm') total += n * 60;
+                else if(match[2] === 'h') total += n * 3600;
+                else if(match[2] === 'd') total += n * 86400;
+            }
+            return matched && Number.isFinite(total) ? total : null;
+        }
+
+        function recordRateLimitHeaders(headers, provider) {
+            if(!headers) return;
+            const get = (name) => headers.get(name);
+            const reqLimit = get('x-ratelimit-limit-requests') || get('anthropic-ratelimit-requests-limit');
+            const reqRemain = get('x-ratelimit-remaining-requests') || get('anthropic-ratelimit-requests-remaining');
+            const reqReset = get('x-ratelimit-reset-requests') || get('anthropic-ratelimit-requests-reset');
+            const tokLimit = get('x-ratelimit-limit-tokens') || get('anthropic-ratelimit-tokens-limit');
+            const tokRemain = get('x-ratelimit-remaining-tokens') || get('anthropic-ratelimit-tokens-remaining');
+            const tokReset = get('x-ratelimit-reset-tokens') || get('anthropic-ratelimit-tokens-reset');
+            if(reqLimit != null) appState.usage.request.limit = Number(reqLimit) || null;
+            if(reqRemain != null) appState.usage.request.remaining = Number(reqRemain);
+            if(reqReset != null) {
+                const seconds = parseResetSeconds(reqReset);
+                appState.usage.request.reset = reqReset;
+                appState.usage.request.resetAt = seconds == null ? null : Date.now() + Math.max(0, seconds * 1000);
+            }
+            if(tokLimit != null) appState.usage.token.limit = Number(tokLimit) || null;
+            if(tokRemain != null) appState.usage.token.remaining = Number(tokRemain);
+            if(tokReset != null) {
+                const seconds = parseResetSeconds(tokReset);
+                appState.usage.token.reset = tokReset;
+                appState.usage.token.resetAt = seconds == null ? null : Date.now() + Math.max(0, seconds * 1000);
+            }
+            appState.usage.provider = provider || appState.provider;
+            appState.usage.model = appState.selectedModel;
+            appState.usage.updatedAt = Date.now();
+            persistUsage();
+            refreshUsagePanel();
+        }
+
+        function recordUsageObject(data, provider) {
+            const usage = data?.usage || data?.usageMetadata;
+            if(usage) {
+                const input = Number(usage.prompt_tokens ?? usage.input_tokens ?? usage.promptTokenCount ?? usage.promptTokens);
+                const output = Number(usage.completion_tokens ?? usage.output_tokens ?? usage.candidatesTokenCount ?? usage.candidatesTokens);
+                const total = Number(usage.total_tokens ?? usage.totalTokenCount ?? usage.totalTokenCount);
+                appState.usage.lastUsage = {
+                    input: Number.isFinite(input) ? input : null,
+                    output: Number.isFinite(output) ? output : null,
+                    total: Number.isFinite(total) ? total : ((Number.isFinite(input) ? input : 0) + (Number.isFinite(output) ? output : 0)) || null
+                };
+            }
+            appState.usage.provider = provider || appState.provider;
+            appState.usage.model = appState.selectedModel;
+            appState.usage.updatedAt = Date.now();
+            persistUsage();
+            refreshUsagePanel();
+        }
+
+        function persistUsage() {
+            try { localStorage.setItem('belajarpakeai-usage', JSON.stringify(appState.usage)); } catch(_) {}
+        }
+
+        function loadUsage() {
+            try {
+                const raw = localStorage.getItem('belajarpakeai-usage');
+                if(raw) {
+                    const saved = JSON.parse(raw);
+                    if(saved && typeof saved === 'object') appState.usage = { ...appState.usage, ...saved, request: { ...appState.usage.request, ...(saved.request || {}) }, token: { ...appState.usage.token, ...(saved.token || {}) }, lastUsage: { ...appState.usage.lastUsage, ...(saved.lastUsage || {}) } };
+                }
+            } catch(_) {}
+        }
+
+        function pct(limit, remaining) {
+            if(!(Number.isFinite(limit) && limit > 0 && Number.isFinite(remaining))) return null;
+            return Math.max(0, Math.min(100, ((limit - remaining) / limit) * 100));
+        }
+
+        function formatReset(value) {
+            if(value == null || value === '') return 'Belum diketahui';
+            const seconds = Number(value);
+            if(Number.isFinite(seconds)) {
+                if(seconds < 60) return `sekitar ${Math.max(1, Math.round(seconds))} detik lagi`;
+                if(seconds < 3600) return `sekitar ${Math.round(seconds / 60)} menit lagi`;
+                if(seconds < 86400) return `sekitar ${Math.round(seconds / 3600)} jam lagi`;
+                return `sekitar ${Math.round(seconds / 86400)} hari lagi`;
+            }
+            return String(value);
+        }
+
+        function getResetSeconds(slot) {
+            if(slot?.resetAt) return Math.max(0, (Number(slot.resetAt) - Date.now()) / 1000);
+            return parseResetSeconds(slot?.reset);
+        }
+
+        function refreshUsagePanel() {
+            loadUsage();
+            const r = appState.usage.request;
+            const t = appState.usage.token;
+            const rp = pct(r.limit, r.remaining);
+            const tp = pct(t.limit, t.remaining);
+            const rpEl = document.getElementById('usage-request-percent');
+            const tpEl = document.getElementById('usage-token-percent');
+            const rb = document.getElementById('usage-request-bar');
+            const tb = document.getElementById('usage-token-bar');
+            const rd = document.getElementById('usage-request-detail');
+            const td = document.getElementById('usage-token-detail');
+            if(!rpEl) return;
+            rpEl.textContent = rp == null ? '—' : `${Math.round(rp)}%`;
+            tpEl.textContent = tp == null ? '—' : `${Math.round(tp)}%`;
+            rb.style.width = `${rp == null ? 0 : rp}%`;
+            tb.style.width = `${tp == null ? 0 : tp}%`;
+            rd.textContent = rp == null ? 'Limit request belum tersedia dari response provider.' : `${Math.max(0, Math.round(r.limit - r.remaining)).toLocaleString()} / ${Math.round(r.limit).toLocaleString()} request terpakai`;
+            td.textContent = tp == null ? 'Limit token belum tersedia dari response provider.' : `${Math.max(0, Math.round(t.limit - t.remaining)).toLocaleString()} / ${Math.round(t.limit).toLocaleString()} token terpakai`;
+            const rSec = getResetSeconds(r);
+            const tSec = getResetSeconds(t);
+            document.getElementById('usage-reset').textContent = rSec != null && r.reset != null ? `Request: ${formatReset(rSec)}${tSec != null && t.reset != null ? ` • Token: ${formatReset(tSec)}` : ''}` : (tSec != null && t.reset != null ? `Token: ${formatReset(tSec)}` : (appState.usage.retryAfter?.resetAt ? `Retry: ${formatReset(Math.max(0, (Number(appState.usage.retryAfter.resetAt) - Date.now()) / 1000))}` : 'Belum diketahui'));
+            const usageText = appState.usage.lastUsage?.total ? `Terakhir: ${appState.usage.lastUsage.total.toLocaleString()} token` : appState.usage.lastStatus;
+            document.getElementById('usage-status').textContent = usageText;
+            const note = document.getElementById('usage-source-note');
+            note.textContent = (rp != null || tp != null) ? 'Data limit terakhir dibaca dari response API. Persentase mengikuti window limit yang dikirim provider.' : 'Provider belum memberikan limit yang bisa dibaca langsung dari browser. Untuk Gemini, batas aktif dan penggunaan resminya tersedia di Google AI Studio.';
+        }
+
+        function classifyApiError(status, rawMessage = '') {
+            const msg = String(rawMessage || '').toLowerCase();
+            if(status === 429 || msg.includes('rate_limit') || msg.includes('resource_exhausted') || msg.includes('quota')) return 'Model has reached its limit. Tunggu sebentar lalu coba lagi.';
+            if(status === 401) return 'API Key tidak valid atau sudah kedaluwarsa.';
+            if(status === 403) return 'Akses ke model ditolak. Periksa izin API atau project yang digunakan.';
+            if(status === 404) return 'Model atau endpoint tidak ditemukan. Pilih model yang tersedia.';
+            if(status === 400) return 'Request tidak valid. Periksa model, file, atau isi permintaan.';
+            if(status === 408) return 'Request terlalu lama dan dibatalkan. Coba lagi.';
+            if(status === 409) return 'Request bentrok dengan kondisi API saat ini. Coba lagi.';
+            if(status === 413) return 'Data yang dikirim terlalu besar untuk API.';
+            if(status === 415) return 'Format data tidak didukung oleh model.';
+            if(status === 422) return 'Data permintaan tidak dapat diproses oleh API.';
+            if(status === 499) return 'Request dibatalkan sebelum selesai.';
+            if(status >= 500 && status < 600) return 'Server AI sedang bermasalah sementara. Coba lagi beberapa saat lagi.';
+            if(msg.includes('failed to fetch') || msg.includes('network')) return 'Koneksi ke server AI gagal. Periksa internet atau Base URL.';
+            return 'Terjadi masalah saat menghubungi model AI. Coba lagi.';
+        }
+
+        async function readApiError(res, provider) {
+            const data = await res.json().catch(() => ({}));
+            const raw = data?.error?.message || data?.message || data?.error || '';
+            if(res.headers) recordRateLimitHeaders(res.headers, provider);
+            appState.usage.lastStatus = `${provider || appState.provider} • ${res.status}`;
+            if(res.status === 429) {
+                const retry = res.headers?.get('retry-after');
+                const retrySeconds = parseResetSeconds(retry);
+                if(retrySeconds != null) appState.usage.retryAfter = { seconds: retrySeconds, resetAt: Date.now() + retrySeconds * 1000 };
+            }
+            persistUsage();
+            refreshUsagePanel();
+            return { data, raw, message: classifyApiError(res.status, raw) };
+        }
+
         async function verifyAPI() {
             const key = document.getElementById('api-key').value.trim();
             const baseUrlInput = document.getElementById('api-base-url').value.trim();
-            
-            if(!key) return alert("Masukkan API Key terlebih dahulu!");
-            
-            const btn = document.querySelector('button[onclick="verifyAPI()"]');
-            const originalText = btn.innerText;
-            btn.innerText = "Memverifikasi...";
-            btn.disabled = true;
+            if(!key) return alert('Masukkan API Key terlebih dahulu!');
 
+            const btn = document.querySelector('button[onclick="verifyAPI()"]');
+            btn.innerText = 'Memverifikasi...';
+            btn.disabled = true;
             appState.apiKey = key;
             appState.baseUrl = baseUrlInput.endsWith('/') ? baseUrlInput.slice(0, -1) : baseUrlInput;
             appState.provider = document.getElementById('api-provider').value;
@@ -733,36 +986,37 @@
             try {
                 if (appState.provider === 'gemini') {
                     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(key)}`);
-                    if(!res.ok) throw new Error("API Key Gemini tidak valid atau akses model ditolak");
+                    if(!res.ok) {
+                        const apiErr = await readApiError(res, 'Gemini');
+                        throw new Error(apiErr.message);
+                    }
                     const data = await res.json();
                     appState.models = (data.models || [])
                         .filter(m => Array.isArray(m.supportedGenerationMethods) && m.supportedGenerationMethods.includes('generateContent'))
                         .map(m => m.name.replace('models/', ''));
                 } else if (appState.provider === 'openai') {
-                    const res = await fetch(`${appState.baseUrl}/models`, {
-                        method: 'GET',
-                        headers: { 'Authorization': `Bearer ${key}` }
-                    });
-                    if(!res.ok) throw new Error("API Key OpenAI tidak valid");
+                    const res = await fetch(`${appState.baseUrl}/models`, { method: 'GET', headers: { 'Authorization': `Bearer ${key}` } });
+                    if(!res.ok) {
+                        const apiErr = await readApiError(res, 'OpenAI');
+                        throw new Error(apiErr.message);
+                    }
                     const data = await res.json();
                     appState.models = (data.data || []).map(m => m.id).filter(Boolean);
                 } else if (appState.provider === 'anthropic') {
-                    // Anthropic browser-direct model discovery is not generally available.
-                    throw new Error("Fallback list Anthropic");
+                    appState.models = ['claude-opus-4-8', 'claude-sonnet-5', 'claude-sonnet-4-6', 'claude-haiku-4-5-20251001'];
                 }
-                
-                if(appState.models.length === 0) throw new Error("Tidak ada model yang tersedia");
+
+                if(appState.models.length === 0) throw new Error('Tidak ada model yang tersedia untuk provider ini.');
+                appState.usage.lastStatus = 'API berhasil diverifikasi';
+                persistUsage();
                 renderModelSelection(btn, true);
             } catch(e) {
-                console.warn("Menggunakan daftar model fallback:", e);
-                if(appState.provider === 'gemini') {
-                    appState.models = ['gemini-2.5-pro', 'gemini-2.5-flash', 'gemini-2.0-flash-exp', 'gemini-2.0-flash', 'gemini-1.5-pro', 'gemini-1.5-flash'];
-                } else if (appState.provider === 'anthropic') {
-                    appState.models = ['claude-3-7-sonnet-20250219', 'claude-3-5-sonnet-20241022', 'claude-3-5-haiku-20241022', 'claude-3-opus-20240229'];
-                } else {
-                    appState.models = ['gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo', 'gpt-3.5-turbo', 'o1-preview', 'o1-mini'];
-                }
-                renderModelSelection(btn, false);
+                appState.usage.lastStatus = 'Verifikasi gagal';
+                persistUsage();
+                btn.disabled = false;
+                btn.innerText = 'Simpan & Verifikasi';
+                const friendly = e.message || 'Verifikasi API gagal.';
+                window.alert(friendly);
             }
         }
 
@@ -816,13 +1070,17 @@
                 throw new Error("Silakan verifikasi API Key di menu Pengaturan API terlebih dahulu.");
             }
 
+            appState.usage.provider = appState.provider;
+            appState.usage.model = appState.selectedModel;
+            appState.usage.lastStatus = 'Memproses request...';
+            refreshUsagePanel();
+
             if (appState.provider === 'anthropic') {
                 let anthropicMessages = [];
-                let systemStr = "";
-                
+                let systemStr = '';
                 messages.forEach(msg => {
                     if(msg.role === 'system') {
-                        systemStr += msg.content + "\n";
+                        systemStr += msg.content + '\n';
                     } else {
                         let contentArr = [];
                         if (Array.isArray(msg.content)) {
@@ -832,62 +1090,78 @@
                                     const parts = c.image_url.url.split(',');
                                     const mimeMatch = parts[0].match(/:(.*?);/);
                                     if(!mimeMatch || !parts[1]) throw new Error('Format gambar tidak valid.');
-                                    contentArr.push({
-                                        type: 'image',
-                                        source: { type: 'base64', media_type: mimeMatch[1], data: parts[1] }
-                                    });
+                                    contentArr.push({ type: 'image', source: { type: 'base64', media_type: mimeMatch[1], data: parts[1] } });
                                 }
                             });
-                        } else {
-                            contentArr.push({ type: 'text', text: msg.content });
-                        }
+                        } else contentArr.push({ type: 'text', text: msg.content });
                         anthropicMessages.push({ role: msg.role, content: contentArr });
                     }
                 });
 
-                const res = await fetch(`${appState.baseUrl}/messages`, {
-                    method: 'POST',
-                    headers: {
-                        'x-api-key': appState.apiKey,
-                        'anthropic-version': '2023-06-01',
-                        'content-type': 'application/json',
-                        'anthropic-dangerous-direct-browser-access': 'true'
-                    },
-                    body: JSON.stringify({
-                        model: appState.selectedModel,
-                        system: systemStr.trim(),
-                        messages: anthropicMessages,
-                        max_tokens: 4096
-                    })
-                });
-
-                if(!res.ok) {
-                    const err = await res.json().catch(() => ({}));
-                    throw new Error(err.error?.message || `Error Claude API (Status: ${res.status})`);
+                try {
+                    const res = await fetch(`${appState.baseUrl}/messages`, {
+                        method: 'POST',
+                        headers: {
+                            'x-api-key': appState.apiKey,
+                            'anthropic-version': '2023-06-01',
+                            'content-type': 'application/json',
+                            'anthropic-dangerous-direct-browser-access': 'true'
+                        },
+                        body: JSON.stringify({ model: appState.selectedModel, system: systemStr.trim(), messages: anthropicMessages, max_tokens: 4096 })
+                    });
+                    if(!res.ok) {
+                        const apiErr = await readApiError(res, 'Anthropic');
+                        throw new Error(apiErr.message);
+                    }
+                    const data = await res.json();
+                    recordUsageFromSuccess(res.headers, data, 'Anthropic');
+                    return data.content?.map(x => x.text || '').join('') || '';
+                } catch(e) {
+                    if(e instanceof TypeError) {
+                        appState.usage.lastStatus = 'Koneksi gagal';
+                        persistUsage(); refreshUsagePanel();
+                        throw new Error('Koneksi ke API gagal. Periksa internet atau Base URL.');
+                    }
+                    throw e;
                 }
-                const data = await res.json();
-                return data.content?.map(x => x.text || '').join('') || '';
-            } else {
+            }
+
+            try {
                 const res = await fetch(`${appState.baseUrl}/chat/completions`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${appState.apiKey}`
-                    },
-                    body: JSON.stringify({
-                        model: appState.selectedModel,
-                        messages: messages,
-                        temperature: 0.7
-                    })
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${appState.apiKey}` },
+                    body: JSON.stringify({ model: appState.selectedModel, messages: messages, temperature: 0.7 })
                 });
-
                 if(!res.ok) {
-                    const err = await res.json().catch(() => ({}));
-                    throw new Error(err.error?.message || `Terjadi kesalahan. Status: ${res.status}`);
+                    const apiErr = await readApiError(res, appState.provider);
+                    throw new Error(apiErr.message);
                 }
                 const data = await res.json();
-                return data.choices?.[0]?.message?.content || '';
+                recordUsageFromSuccess(res.headers, data, appState.provider);
+                const content = data.choices?.[0]?.message?.content || '';
+                if(!content) throw new Error('Model tidak mengembalikan jawaban.');
+                return content;
+            } catch(e) {
+                if(e instanceof TypeError) {
+                    appState.usage.lastStatus = 'Koneksi gagal';
+                    persistUsage(); refreshUsagePanel();
+                    throw new Error('Koneksi ke API gagal. Periksa internet atau Base URL.');
+                }
+                throw e;
             }
+        }
+
+        function recordUsageFromSuccess(headers, data, provider) {
+            recordRateLimitHeaders(headers, provider);
+            recordUsageObject(data, provider);
+            appState.usage.lastStatus = 'Request berhasil';
+            if(data?.usage) appState.usage.lastUsage = {
+                input: Number(data.usage.prompt_tokens ?? data.usage.input_tokens ?? data.usage.promptTokenCount) || null,
+                output: Number(data.usage.completion_tokens ?? data.usage.output_tokens ?? data.usage.candidatesTokenCount) || null,
+                total: Number(data.usage.total_tokens ?? data.usage.totalTokenCount) || null
+            };
+            persistUsage();
+            refreshUsagePanel();
         }
 
         // Direct Gemini video analysis for public YouTube URLs.
@@ -918,9 +1192,15 @@
 
             const data = await res.json().catch(() => ({}));
             if(!res.ok) {
-                const message = data.error?.message || `Gemini Video API error (Status: ${res.status})`;
+                const raw = data.error?.message || '';
+                recordRateLimitHeaders(res.headers, 'Gemini');
+                appState.usage.lastStatus = `Gemini request gagal`;
+                persistUsage();
+                refreshUsagePanel();
+                const message = classifyApiError(res.status, raw);
                 throw new Error(message);
             }
+            recordUsageFromSuccess(res.headers, data, 'Gemini');
 
             const text = data.candidates?.[0]?.content?.parts?.map(p => p.text || '').join('') || '';
             if(!text) throw new Error('Gemini tidak mengembalikan isi catatan dari video tersebut.');
