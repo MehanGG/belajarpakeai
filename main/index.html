@@ -2215,10 +2215,10 @@ const fbApp=initializeApp(firebaseConfig); const auth=getAuth(fbApp); const db=g
 window.__db=db; window.__fb={doc,setDoc,collection,addDoc,getDocs,query,orderBy,limit,serverTimestamp};
 window.__fbAuth=auth;
 
-function redirectToLogin(){ const target=new URL('../index.html',window.location.href); target.searchParams.set('next','main'); window.location.replace(target.href); }
+function redirectToLogin(){ const target=new URL('./index.html',window.location.href); target.searchParams.set('next','main'); window.location.replace(target.href); }
 onAuthStateChanged(auth,async user=>{
     if(!user){ redirectToLogin(); return; }
-    currentUser=user;
+    window.currentUser=user;
     document.body.classList.remove('app-locked');
     document.getElementById('auth-loading')?.remove();
     try {
