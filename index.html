@@ -1,39 +1,245 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>belajarpakeai — Belajar Lebih Cerdas</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>belajarpakeai — Masuk</title>
 <script src="https://cdn.tailwindcss.com"></script>
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Quicksand:wght@600;700&display=swap" rel="stylesheet">
-<style>body{font-family:Poppins,sans-serif}.title{font-family:Quicksand,sans-serif}.glow{box-shadow:0 20px 80px rgba(79,70,229,.22)}.grid-bg{background-image:linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.04) 1px,transparent 1px);background-size:42px 42px}</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Quicksand:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  body{font-family:Poppins,sans-serif}
+  .title{font-family:Quicksand,sans-serif}
+  .grid-bg{background-image:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);background-size:42px 42px}
+  .modal-in{animation:modalIn .18s ease-out}
+  @keyframes modalIn{from{opacity:0;transform:translateY(10px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+</style>
 </head>
 <body class="bg-slate-950 text-white min-h-screen">
-<div class="absolute inset-0 grid-bg pointer-events-none"></div>
-<header class="relative z-10 max-w-6xl mx-auto px-5 py-5 flex items-center justify-between"><div class="font-extrabold text-xl tracking-tight"><span class="text-indigo-400">belajar</span>pakeai</div><button id="header-login" class="px-5 py-2.5 rounded-xl bg-white text-slate-950 font-bold hover:bg-slate-100">Masuk</button></header>
+<div class="fixed inset-0 grid-bg pointer-events-none"></div>
+<header class="relative z-10 max-w-6xl mx-auto px-5 py-5 flex items-center justify-between">
+  <div class="font-extrabold text-xl tracking-tight"><span class="text-indigo-400">belajar</span>pakeai</div>
+  <button id="header-login" class="px-5 py-2.5 rounded-xl bg-white text-slate-950 font-bold hover:bg-slate-100">Masuk</button>
+</header>
+
 <main class="relative z-10 max-w-6xl mx-auto px-5">
-<section class="min-h-[72vh] flex items-center py-12"><div class="grid lg:grid-cols-2 gap-12 items-center w-full"><div><div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-400/20 text-indigo-300 text-sm mb-5"><i class="fa-solid fa-sparkles"></i> AI untuk belajar</div><h1 class="title text-5xl md:text-6xl font-bold leading-tight">Belajar lebih cepat.<br><span class="text-indigo-400">Paham lebih dalam.</span></h1><p class="text-slate-400 text-lg mt-6 max-w-xl">belajarpakeai membantu kamu merangkum materi, membuat quiz, mengerjakan soal, membuat mind map, sampai menyusun catatan dari foto dan video.</p><div class="flex flex-wrap gap-3 mt-8"><button onclick="openAuth('login')" class="px-7 py-3.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 font-bold shadow-lg">Masuk ke belajarpakeai <i class="fa-solid fa-arrow-right ml-2"></i></button><button onclick="openAuth('signup')" class="px-7 py-3.5 rounded-2xl border border-slate-700 hover:bg-white/5 font-semibold">Buat akun</button></div></div><div class="glow bg-slate-900/90 border border-slate-800 rounded-3xl p-5"><div class="rounded-2xl bg-slate-950 p-5 border border-slate-800"><div class="flex items-center gap-3 mb-5"><div class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center"><i class="fa-solid fa-graduation-cap"></i></div><div><div class="font-bold">Belajar Dashboard</div><div class="text-xs text-slate-500">Semua alat belajar dalam satu tempat</div></div></div><div class="grid grid-cols-2 gap-3"><div class="p-4 rounded-2xl bg-slate-900 border border-slate-800"><i class="fa-solid fa-book-open text-indigo-400"></i><div class="font-semibold mt-3">Rangkum</div><div class="text-xs text-slate-500 mt-1">Materi lebih ringkas</div></div><div class="p-4 rounded-2xl bg-slate-900 border border-slate-800"><i class="fa-solid fa-clipboard-question text-indigo-400"></i><div class="font-semibold mt-3">Quiz</div><div class="text-xs text-slate-500 mt-1">Latihan interaktif</div></div><div class="p-4 rounded-2xl bg-slate-900 border border-slate-800"><i class="fa-solid fa-diagram-project text-indigo-400"></i><div class="font-semibold mt-3">Mind Map</div><div class="text-xs text-slate-500 mt-1">Hubungkan konsep</div></div><div class="p-4 rounded-2xl bg-slate-900 border border-slate-800"><i class="fa-solid fa-note-sticky text-indigo-400"></i><div class="font-semibold mt-3">Catatan</div><div class="text-xs text-slate-500 mt-1">Simpan dan baca lagi</div></div></div></div></div></div></section>
-<section class="py-16 border-t border-slate-800"><div class="text-center mb-10"><h2 class="title text-3xl font-bold">Kenapa belajarpakeai?</h2><p class="text-slate-400 mt-2">Dibuat untuk membuat proses belajar lebih praktis.</p></div><div class="grid md:grid-cols-3 gap-5"><div class="p-6 rounded-2xl bg-slate-900 border border-slate-800"><i class="fa-solid fa-bolt text-2xl text-indigo-400"></i><h3 class="font-bold text-lg mt-4">Praktis</h3><p class="text-slate-400 text-sm mt-2">Masukkan materi dan biarkan AI membantu menyusun bahan belajar.</p></div><div class="p-6 rounded-2xl bg-slate-900 border border-slate-800"><i class="fa-solid fa-layer-group text-2xl text-indigo-400"></i><h3 class="font-bold text-lg mt-4">Banyak alat</h3><p class="text-slate-400 text-sm mt-2">Chat, rangkuman, quiz, essay, mind map, YouTube, dan catatan dalam satu dashboard.</p></div><div class="p-6 rounded-2xl bg-slate-900 border border-slate-800"><i class="fa-solid fa-cloud text-2xl text-indigo-400"></i><h3 class="font-bold text-lg mt-4">Tersimpan</h3><p class="text-slate-400 text-sm mt-2">Catatan tersimpan di akunmu sehingga bisa dibaca kembali dari web.</p></div></div></section>
+<section class="min-h-[74vh] flex items-center py-12">
+  <div class="grid lg:grid-cols-2 gap-12 items-center w-full">
+    <div>
+      <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-400/20 text-indigo-300 text-sm mb-5">AI untuk belajar</div>
+      <h1 class="title text-5xl md:text-6xl font-bold leading-tight">Belajar lebih cepat.<br><span class="text-indigo-400">Paham lebih dalam.</span></h1>
+      <p class="text-slate-400 text-lg mt-6 max-w-xl">belajarpakeai membantu kamu merangkum materi, membuat quiz, mengerjakan soal, membuat mind map, dan menyusun catatan belajar dari foto.</p>
+      <div class="flex flex-wrap gap-3 mt-8">
+        <button id="hero-login" class="px-7 py-3.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 font-bold shadow-lg">Masuk</button>
+        <button id="hero-signup" class="px-7 py-3.5 rounded-2xl border border-slate-700 hover:bg-white/5 font-semibold">Buat akun</button>
+      </div>
+    </div>
+    <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-2xl">
+      <div class="rounded-2xl bg-slate-950 p-5 border border-slate-800">
+        <div class="flex items-center gap-3 mb-5">
+          <div class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center font-bold">AI</div>
+          <div><div class="font-bold">Belajarpakeai</div><div class="text-xs text-slate-500">Semua alat belajar dalam satu tempat</div></div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div class="p-4 rounded-2xl bg-slate-900 border border-slate-800"><div class="text-indigo-400 font-bold">Rangkum</div><div class="text-xs text-slate-500 mt-1">Materi lebih ringkas</div></div>
+          <div class="p-4 rounded-2xl bg-slate-900 border border-slate-800"><div class="text-indigo-400 font-bold">Quiz</div><div class="text-xs text-slate-500 mt-1">Latihan interaktif</div></div>
+          <div class="p-4 rounded-2xl bg-slate-900 border border-slate-800"><div class="text-indigo-400 font-bold">Mind Map</div><div class="text-xs text-slate-500 mt-1">Hubungkan konsep</div></div>
+          <div class="p-4 rounded-2xl bg-slate-900 border border-slate-800"><div class="text-indigo-400 font-bold">Catatan</div><div class="text-xs text-slate-500 mt-1">Simpan dan baca lagi</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 </main>
 <footer class="relative z-10 border-t border-slate-800 text-center text-slate-500 text-sm py-6">© 2026 belajarpakeai</footer>
 
-<div id="auth-modal" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm items-center justify-center p-4"><div class="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl"><div class="flex justify-between items-center mb-5"><div><h2 id="auth-title" class="title text-2xl font-bold">Masuk</h2><p id="auth-subtitle" class="text-sm text-slate-400 mt-1">Masuk untuk membuka belajarpakeai.</p></div><button onclick="closeAuth()" class="text-slate-500 hover:text-white text-xl"><i class="fa-solid fa-xmark"></i></button></div><div id="auth-error" class="hidden mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-300 text-sm"></div><div id="username-wrap" class="hidden mb-3"><label class="text-sm text-slate-300">Username</label><input id="username" class="mt-1 w-full rounded-xl bg-slate-950 border border-slate-700 px-4 py-3 outline-none focus:border-indigo-500" placeholder="Nama pengguna"></div><label class="text-sm text-slate-300">Email</label><input id="email" type="email" class="mt-1 w-full rounded-xl bg-slate-950 border border-slate-700 px-4 py-3 outline-none focus:border-indigo-500" placeholder="nama@email.com"><label class="text-sm text-slate-300 block mt-3">Password</label><input id="password" type="password" class="mt-1 w-full rounded-xl bg-slate-950 border border-slate-700 px-4 py-3 outline-none focus:border-indigo-500" placeholder="Minimal 6 karakter"><button id="auth-submit" onclick="submitAuth()" class="w-full mt-5 py-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 font-bold">Masuk</button><button id="auth-switch" onclick="toggleAuthMode()" class="w-full mt-3 text-sm text-indigo-300 hover:text-indigo-200">Belum punya akun? Buat akun</button></div></div>
+<div id="auth-modal" class="hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-sm items-center justify-center p-4">
+  <div class="modal-in w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl">
+    <div class="flex justify-between items-center mb-5">
+      <div><h2 id="auth-title" class="title text-2xl font-bold">Masuk</h2><p id="auth-subtitle" class="text-sm text-slate-400 mt-1">Masuk untuk membuka belajarpakeai.</p></div>
+      <button id="auth-close" class="text-slate-500 hover:text-white text-xl">×</button>
+    </div>
+    <div id="auth-error" class="hidden mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-300 text-sm leading-relaxed"></div>
+    <div id="auth-info" class="hidden mb-4 p-3 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-200 text-sm leading-relaxed"></div>
+
+    <div id="username-wrap" class="hidden mb-3">
+      <label class="text-sm text-slate-300">Username</label>
+      <input id="username" autocomplete="username" class="mt-1 w-full rounded-xl bg-slate-950 border border-slate-700 px-4 py-3 outline-none focus:border-indigo-500" placeholder="Nama pengguna">
+    </div>
+    <label class="text-sm text-slate-300">Email</label>
+    <input id="email" type="email" autocomplete="email" inputmode="email" class="mt-1 w-full rounded-xl bg-slate-950 border border-slate-700 px-4 py-3 outline-none focus:border-indigo-500" placeholder="nama@email.com">
+    <label class="text-sm text-slate-300 block mt-3">Password</label>
+    <input id="password" type="password" autocomplete="current-password" class="mt-1 w-full rounded-xl bg-slate-950 border border-slate-700 px-4 py-3 outline-none focus:border-indigo-500" placeholder="Minimal 6 karakter">
+
+    <button id="auth-submit" class="w-full mt-5 py-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 font-bold disabled:opacity-60 disabled:cursor-not-allowed">Masuk</button>
+    <button id="auth-switch" class="w-full mt-3 text-sm text-indigo-300 hover:text-indigo-200">Belum punya akun? Buat akun</button>
+  </div>
+</div>
+
 <script type="module">
-import {initializeApp} from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js';
-import {getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js';
-import {getFirestore,doc,setDoc,serverTimestamp} from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js';
-const firebaseConfig={apiKey:'AIzaSyAUBk8X7AizLkw61rMvPeavXZoEPt59TOw',authDomain:'belajarpakeai-11515.firebaseapp.com',projectId:'belajarpakeai-11515',storageBucket:'belajarpakeai-11515.firebasestorage.app',messagingSenderId:'240138218496',appId:'1:240138218496:web:45f2abfa0d72e13ba0bce5',measurementId:'G-N7L3VBBMET'};
-const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app); let mode='login';
-const modal=document.getElementById('auth-modal');
-window.openAuth=m=>{mode=m;updateAuthUI();modal.classList.remove('hidden');modal.classList.add('flex');document.getElementById('email').focus()};
-window.closeAuth=()=>{modal.classList.add('hidden');modal.classList.remove('flex');clearError()};
-window.toggleAuthMode=()=>{mode=mode==='login'?'signup':'login';updateAuthUI();clearError()};
-function updateAuthUI(){const signup=mode==='signup';document.getElementById('auth-title').textContent=signup?'Buat akun':'Masuk';document.getElementById('auth-subtitle').textContent=signup?'Buat akun untuk menyimpan catatanmu.':'Masuk untuk membuka belajarpakeai.';document.getElementById('username-wrap').classList.toggle('hidden',!signup);document.getElementById('auth-submit').textContent=signup?'Buat Akun':'Masuk';document.getElementById('auth-switch').textContent=signup?'Sudah punya akun? Masuk':'Belum punya akun? Buat akun'}
-function clearError(){const e=document.getElementById('auth-error');e.classList.add('hidden');e.textContent=''}
-function authError(e){const map={'auth/email-already-in-use':'Email sudah terdaftar.','auth/invalid-email':'Format email tidak valid.','auth/weak-password':'Password terlalu lemah. Gunakan minimal 6 karakter.','auth/invalid-credential':'Email atau password salah.','auth/too-many-requests':'Terlalu banyak percobaan. Coba lagi nanti.'};return map[e.code]||'Terjadi masalah saat autentikasi. Coba lagi.'}
-window.submitAuth=async()=>{clearError();const email=document.getElementById('email').value.trim(),password=document.getElementById('password').value,username=document.getElementById('username').value.trim();if(!email||!password||(mode==='signup'&&!username)){showError('Lengkapi semua kolom terlebih dahulu.');return}const btn=document.getElementById('auth-submit');btn.disabled=true;btn.textContent='Memproses...';try{if(mode==='signup'){const cred=await createUserWithEmailAndPassword(auth,email,password);await setDoc(doc(db,'users',cred.user.uid),{username,email,createdAt:serverTimestamp(),updatedAt:serverTimestamp()},{merge:true})}else{await signInWithEmailAndPassword(auth,email,password)}window.location.href='main/belajarpakeai.html'}catch(e){showError(authError(e))}finally{btn.disabled=false;btn.textContent=mode==='signup'?'Buat Akun':'Masuk'}};
-function showError(t){const e=document.getElementById('auth-error');e.textContent=t;e.classList.remove('hidden')}
-document.getElementById('header-login').onclick=()=>openAuth('login');
-onAuthStateChanged(auth,user=>{if(user && location.pathname.endsWith('/index.html')){ /* keep landing page usable; explicit login opens main */ }});
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+import {
+  getAuth,
+  setPersistence,
+  browserLocalPersistence,
+  onAuthStateChanged,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword
+} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAUBk8X7AizLkw61rMvPeavXZoEPt59TOw",
+  authDomain: "belajarpakeai-11515.firebaseapp.com",
+  projectId: "belajarpakeai-11515",
+  storageBucket: "belajarpakeai-11515.firebasestorage.app",
+  messagingSenderId: "240138218496",
+  appId: "1:240138218496:web:45f2abfa0d72e13ba0bce5",
+  measurementId: "G-N7L3VBBMET"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+let mode = 'login';
+let busy = false;
+const modal = document.getElementById('auth-modal');
+
+function getNextPage(){
+  const next = new URLSearchParams(location.search).get('next');
+  return next === 'main' ? './belajarpakeai.html' : './belajarpakeai.html';
+}
+function showError(message){
+  const el = document.getElementById('auth-error');
+  el.textContent = message;
+  el.classList.remove('hidden');
+  document.getElementById('auth-info').classList.add('hidden');
+}
+function showInfo(message){
+  const el = document.getElementById('auth-info');
+  el.textContent = message;
+  el.classList.remove('hidden');
+}
+function clearMessages(){
+  document.getElementById('auth-error').classList.add('hidden');
+  document.getElementById('auth-error').textContent = '';
+  document.getElementById('auth-info').classList.add('hidden');
+  document.getElementById('auth-info').textContent = '';
+}
+function authError(error){
+  const code = error?.code || '';
+  const map = {
+    'auth/email-already-in-use':'Email ini sudah terdaftar. Coba masuk dengan email tersebut.',
+    'auth/invalid-email':'Format email tidak valid.',
+    'auth/weak-password':'Password terlalu lemah. Gunakan minimal 6 karakter.',
+    'auth/invalid-credential':'Email atau password salah.',
+    'auth/user-not-found':'Akun dengan email tersebut tidak ditemukan.',
+    'auth/wrong-password':'Password salah.',
+    'auth/user-disabled':'Akun ini dinonaktifkan.',
+    'auth/too-many-requests':'Terlalu banyak percobaan. Tunggu sebentar lalu coba lagi.',
+    'auth/network-request-failed':'Koneksi internet bermasalah. Pastikan internet aktif lalu coba lagi.',
+    'auth/operation-not-allowed':'Pendaftaran email/password belum diaktifkan di Firebase. Aktifkan Authentication → Sign-in method → Email/Password.',
+    'auth/unauthorized-domain':'Domain website ini belum diizinkan Firebase Authentication. Tambahkan domain website ini ke Authentication → Settings → Authorized domains.',
+    'auth/invalid-api-key':'Firebase API key tidak valid atau sudah dibatasi sehingga Authentication tidak bisa digunakan.',
+    'auth/api-key-not-valid.-please-pass-a-valid-api-key.':'Firebase API key tidak valid. Periksa konfigurasi web app Firebase.'
+  };
+  return map[code] || `Autentikasi gagal (${code || 'unknown-error'}). ${error?.message || 'Coba lagi.'}`;
+}
+function updateUI(){
+  const signup = mode === 'signup';
+  document.getElementById('auth-title').textContent = signup ? 'Buat akun' : 'Masuk';
+  document.getElementById('auth-subtitle').textContent = signup ? 'Buat akun untuk menyimpan data belajarmu.' : 'Masuk untuk membuka belajarpakeai.';
+  document.getElementById('username-wrap').classList.toggle('hidden', !signup);
+  document.getElementById('auth-submit').textContent = signup ? 'Buat Akun' : 'Masuk';
+  document.getElementById('auth-switch').textContent = signup ? 'Sudah punya akun? Masuk' : 'Belum punya akun? Buat akun';
+  document.getElementById('password').setAttribute('autocomplete', signup ? 'new-password' : 'current-password');
+}
+function openAuth(nextMode){
+  mode = nextMode;
+  updateUI();
+  clearMessages();
+  modal.classList.remove('hidden');
+  modal.classList.add('flex');
+  setTimeout(()=>document.getElementById('email').focus(),30);
+}
+function closeAuth(){
+  if(busy) return;
+  modal.classList.add('hidden');
+  modal.classList.remove('flex');
+  clearMessages();
+}
+async function finishLogin(){
+  location.replace(getNextPage());
+}
+
+async function submitAuth(){
+  if(busy) return;
+  clearMessages();
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  const username = document.getElementById('username').value.trim();
+  if(!email || !password || (mode === 'signup' && !username)){
+    showError('Lengkapi semua kolom terlebih dahulu.');
+    return;
+  }
+  if(mode === 'signup' && password.length < 6){
+    showError('Password minimal 6 karakter.');
+    return;
+  }
+  busy = true;
+  const btn = document.getElementById('auth-submit');
+  btn.disabled = true;
+  btn.textContent = mode === 'signup' ? 'Membuat akun...' : 'Memeriksa...';
+  try{
+    await setPersistence(auth, browserLocalPersistence);
+    if(mode === 'signup'){
+      const cred = await createUserWithEmailAndPassword(auth, email, password);
+      // Profil Firestore dibuat sebagai best-effort. Kegagalan Firestore tidak membatalkan akun Auth.
+      try{
+        await setDoc(doc(db, 'users', cred.user.uid), {
+          username,
+          email,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        }, {merge:true});
+      }catch(profileError){
+        console.warn('Profil Firestore belum tersimpan:', profileError);
+      }
+      showInfo('Akun berhasil dibuat. Membuka aplikasi...');
+    }else{
+      await signInWithEmailAndPassword(auth, email, password);
+      showInfo('Login berhasil. Membuka aplikasi...');
+    }
+    await finishLogin();
+  }catch(error){
+    console.error(error);
+    showError(authError(error));
+  }finally{
+    busy = false;
+    btn.disabled = false;
+    updateUI();
+  }
+}
+
+document.getElementById('header-login').addEventListener('click',()=>openAuth('login'));
+document.getElementById('hero-login').addEventListener('click',()=>openAuth('login'));
+document.getElementById('hero-signup').addEventListener('click',()=>openAuth('signup'));
+document.getElementById('auth-close').addEventListener('click',closeAuth);
+document.getElementById('auth-switch').addEventListener('click',()=>{mode=mode==='login'?'signup':'login';updateUI();clearMessages();});
+document.getElementById('auth-submit').addEventListener('click',submitAuth);
+document.getElementById('password').addEventListener('keydown',e=>{if(e.key==='Enter') submitAuth();});
+document.getElementById('email').addEventListener('keydown',e=>{if(e.key==='Enter') submitAuth();});
+modal.addEventListener('click',e=>{if(e.target===modal) closeAuth();});
+
+onAuthStateChanged(auth,user=>{
+  if(user){
+    // Sudah login → langsung masuk ke aplikasi, tanpa perlu klik lagi.
+    location.replace(getNextPage());
+  }
+});
+
+updateUI();
 </script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
-</body></html>
+</body>
+</html>
